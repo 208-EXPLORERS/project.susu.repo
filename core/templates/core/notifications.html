@@ -1,0 +1,259 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block extra_head %}
+<style>
+    .notification-item {
+        transition: all 0.3s ease;
+        border-left: 4px solid #007bff;
+    }
+    .notification-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+    }
+    .notification-unread {
+        background-color: #fff3cd;
+        border-left-color: #ffc107;
+    }
+    .notification-read {
+        background-color: white;
+        border-left-color: #6c757d;
+        opacity: 0.8;
+    }
+    .notification-loan_application { border-left-color: #28a745; }
+    .notification-daily_submission { border-left-color: #17a2b8; }
+    .notification-customer_inactive { border-left-color: #ffc107; }
+    .notification-loan_overdue { border-left-color: #dc3545; }
+    .notification-system_alert { border-left-color: #6f42c1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i class="fas fa-bell"></i> Notifications
+                    {% if unread_count > 0 %}
+                        <span class="badge badge-danger">{{ unread_count }} unread</span>
+                    {% endif %}
+                </h2>
+                <div>
+                    {% if unread_count > 0 %}
+                        <button class="btn btn-outline-primary btn-sm" onclick="markAllAsRead()">
+                            <i class="fas fa-check-double"></i> Mark All as Read
+                        </button>
+                    {% endif %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="row">
+        <div class="col-12">
+            {% if notifications %}
+                <div class="list-group">
+                    {% for notification in notifications %}
+                        <div class="list-group-item notification-item notification-{{ notification.notification_type }} {% if not notification.is_read %}notification-unread{% else %}notification-read{% endif %}"
+                             data-notification-id="{{ notification.id }}">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <!-- Notification Header -->
+                                    <div class="d-flex align-items-center mb-2">
+                                        <!-- Type Icon -->
+                                        <span class="mr-2">
+                                            {% if notification.notification_type == 'loan_application' %}
+                                                <i class="fas fa-handshake text-success"></i>
+                                            {% elif notification.notification_type == 'daily_submission' %}
+                                                <i class="fas fa-calendar-check text-info"></i>
+                                            {% elif notification.notification_type == 'customer_inactive' %}
+                                                <i class="fas fa-user-times text-warning"></i>
+                                            {% elif notification.notification_type == 'loan_overdue' %}
+                                                <i class="fas fa-exclamation-triangle text-danger"></i>
+                                            {% elif notification.notification_type == 'system_alert' %}
+                                                <i class="fas fa-cog text-purple"></i>
+                                            {% else %}
+                                                <i class="fas fa-bell text-secondary"></i>
+                                            {% endif %}
+                                        </span>
+                                        
+                                        <!-- Title -->
+                                        <h6 class="mb-0 flex-grow-1">{{ notification.title }}</h6>
+                                        
+                                        <!-- Unread Indicator -->
+                                        {% if not notification.is_read %}
+                                            <span class="badge badge-primary badge-pill">New</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Message -->
+                                    <p class="mb-2 text-muted">{{ notification.message }}</p>
+                                    
+                                    <!-- Timestamp -->
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i>
+                                        {{ notification.created_at|timesince }} ago
+                                        <span class="mx-2">|</span>
+                                        {{ notification.created_at|date:"M d, Y H:i" }}
+                                    </small>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="ml-3">
+                                    {% if not notification.is_read %}
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="markAsRead({{ notification.id }})">
+                                            <i class="fas fa-check"></i> Mark as Read
+                                        </button>
+                                    {% endif %}
+                                    
+                                    <!-- Link to related object if applicable -->
+                                    {% if notification.notification_type == 'loan_application' and notification.related_object_id %}
+                                        {% if user.is_superuser %}
+                                            <a href="{% url 'review_loans' %}" class="btn btn-sm btn-success ml-1">
+                                                <i class="fas fa-eye"></i> Review Loans
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination (if needed) -->
+                {% if notifications.has_other_pages %}
+                    <nav aria-label="Notifications pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if notifications.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ notifications.previous_page_number }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Page {{ notifications.number }} of {{ notifications.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if notifications.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ notifications.next_page_number }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Notifications</h4>
+                    <p class="text-muted">You're all caught up! No new notifications at this time.</p>
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Mark single notification as read
+async function markAsRead(notificationId) {
+    try {
+        const response = await fetch(`/notifications/${notificationId}/read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (response.ok) {
+            // Update the notification item visually
+            const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
+            if (notificationItem) {
+                notificationItem.classList.remove('notification-unread');
+                notificationItem.classList.add('notification-read');
+                
+                // Remove the "New" badge
+                const newBadge = notificationItem.querySelector('.badge-primary');
+                if (newBadge) {
+                    newBadge.remove();
+                }
+                
+                // Remove the "Mark as Read" button
+                const markReadBtn = notificationItem.querySelector('button');
+                if (markReadBtn) {
+                    markReadBtn.remove();
+                }
+            }
+            
+            // Update unread count in header
+            updateUnreadCount();
+        }
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        alert('Error marking notification as read. Please try again.');
+    }
+}
+
+// Mark all notifications as read
+async function markAllAsRead() {
+    const unreadNotifications = document.querySelectorAll('.notification-unread');
+    
+    for (const notification of unreadNotifications) {
+        const notificationId = notification.getAttribute('data-notification-id');
+        await markAsRead(notificationId);
+    }
+    
+    // Refresh the page to show updated state
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+// Update unread count
+async function updateUnreadCount() {
+    try {
+        const response = await fetch('/api/notifications/unread-count/');
+        const data = await response.json();
+        
+        // Update header badge
+        const headerBadge = document.querySelector('h2 .badge');
+        if (headerBadge) {
+            if (data.count > 0) {
+                headerBadge.textContent = `${data.count} unread`;
+            } else {
+                headerBadge.style.display = 'none';
+            }
+        }
+        
+        // Update navigation badge if present
+        const navBadge = document.querySelector('.notification-badge');
+        if (navBadge) {
+            if (data.count > 0) {
+                navBadge.textContent = data.count;
+                navBadge.style.display = 'inline';
+            } else {
+                navBadge.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error updating unread count:', error);
+    }
+}
+</script>
+{% endblock %}

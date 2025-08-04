@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+
+{% block title %}Officer Dashboard - Susu System{% endblock %}
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3">
+                        <i class="fas fa-user-tie text-primary"></i>
+                        Welcome, {{ officer.user.get_full_name|default:officer.user.username }}
+                    </h1>
+                    <p class="text-muted mb-0">{{ officer.community.name }} Community</p>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'add_customer' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Add Customer
+                    </a>
+                    <a href="{% url 'submit_daily_total' %}" class="btn btn-success">
+                        <i class="fas fa-upload"></i> Submit Daily Total
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="total_customers">{{ total_customers }}</h4>
+                            <p class="card-text">My Customers</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-gradient-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">GHS <span data-stat-type="total_today_collections">{{ total_today_collections|floatformat:2 }}</span></h4>
+                            <p class="card-text">Today's Collections</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-coins fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-gradient-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="pending_loans">{{ pending_loans|default:0 }}</h4>
+                            <p class="card-text">Pending Loans</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-hourglass-half fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-gradient-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="approved_loans">{{ approved_loans|default:0 }}</h4>
+                            <p class="card-text">Approved Loans</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Customer Management -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users text-primary"></i>
+                        Customer Management
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'add_customer' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i> Add New
+                        </a>
+                        <a href="{% url 'officer_customers' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter -->
+                    <form method="GET" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="q" placeholder="Search customers..." value="{{ query }}">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="submit">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <select name="status" class="form-control" onchange="this.form.submit()">
+                                    <option value="">All Status</option>
+                                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="{% url 'officer_dashboard' %}" class="btn btn-secondary btn-block">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Customer List -->
+                    {% if customers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Contact</th>
+                                        <th>Total Savings</th>
+                                        <th>Last Contribution</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for customer in customers %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if customer.photo %}
+                                                    <img src="{{ customer.photo.url }}" class="rounded-circle mr-2" width="32" height="32">
+                                                {% else %}
+                                                    <div class="bg-secondary rounded-circle mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                        <i class="fas fa-user text-white"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <strong>{{ customer.name }}</strong><br>
+                                                    <small class="text-muted">{{ customer.customer_id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small>{{ customer.phone|default:"No phone" }}</small><br>
+                                            <small class="text-muted">{{ customer.address|truncatechars:30 }}</small>
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">GHS {{ customer.total_savings|floatformat:2 }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if customer.last_contribution_date %}
+                                                <small>{{ customer.last_contribution_date }}</small>
+                                            {% else %}
+                                                <small class="text-muted">No contributions</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'add_contribution' customer.id %}" class="btn btn-success btn-sm" title="Add Contribution">
+                                                    <i class="fas fa-plus"></i>
+                                                </a>
+                                                <a href="{% url 'customer_detail' customer.id %}" class="btn btn-info btn-sm" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'apply_loan' customer.id %}" class="btn btn-warning btn-sm" title="Apply Loan">
+                                                    <i class="fas fa-hand-holding-usd"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No customers found</h5>
+                            <p class="text-muted">Start by adding your first customer</p>
+                            <a href="{% url 'add_customer' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add Customer
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt text-warning"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'add_customer' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-plus text-primary"></i> Add New Customer
+                        </a>
+                        <a href="{% url 'submit_daily_total' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-upload text-success"></i> Submit Daily Total
+                        </a>
+                        <a href="{% url 'submission_history' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-history text-info"></i> Submission History
+                        </a>
+                        <a href="{% url 'officer_customers' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-list text-secondary"></i> View All Customers
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Notifications -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bell text-info"></i>
+                        Notifications
+                    </h5>
+                    {% if unread_notifications %}
+                        <span class="badge badge-danger">{{ unread_notifications }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if recent_notifications %}
+                        {% for notification in recent_notifications %}
+                            <div class="media mb-3 {% if not notification.is_read %}bg-light rounded p-2{% endif %}">
+                                <div class="media-body">
+                                    <h6 class="mt-0 mb-1">{{ notification.title }}</h6>
+                                    <p class="mb-1 small">{{ notification.message|truncatewords:10 }}</p>
+                                    <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                    {% if not notification.is_read %}
+                                        <small class="text-primary ml-2"><i class="fas fa-circle"></i></small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="text-center">
+                            <a href="{% url 'notifications_list' %}" class="btn btn-outline-primary btn-sm">
+                                View All
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                            <p>No notifications</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Submissions -->
+            {% if submissions %}
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clipboard-list text-success"></i>
+                        Recent Submissions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for submission in submissions %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                            <div>
+                                <strong>{{ submission.date }}</strong><br>
+                                <small class="text-muted">GHS {{ submission.total_amount }}</small>
+                            </div>
+                            <div>
+                                {% if submission.approved %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'submission_history' %}" class="btn btn-outline-secondary btn-sm">
+                            View All
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+}
+
+.opacity-75 {
+    opacity: 0.75;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+.stat-updated {
+    animation: statPulse 0.5s ease-in-out;
+}
+
+@keyframes statPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Keyboard shortcut for quick actions
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + N for new customer
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            window.location.href = "{% url 'add_customer' %}";
+        }
+        
+        // Ctrl + S for submit daily total
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            window.location.href = "{% url 'submit_daily_total' %}";
+        }
+    });
+    
+    // Auto-refresh stats every 30 seconds
+    setInterval(function() {
+        // This would connect to a real-time endpoint to update stats
+        console.log('Refreshing dashboard stats...');
+    }, 30000);
+});
+</script>
+{% endblock %}

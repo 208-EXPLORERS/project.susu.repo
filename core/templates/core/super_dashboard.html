@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}Super Admin Dashboard - Susu System{% endblock %}
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-tachometer-alt text-primary"></i>
+                    Super Admin Dashboard
+                </h1>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary btn-sm" onclick="Susu.System.refresh()">
+                        <i class="fas fa-sync-alt"></i> Refresh All
+                    </button>
+                    <a href="{% url 'export_contributions_pdf' %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </a>
+                    <a href="{% url 'export_contributions_csv' %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="total_officers">{{ total_officers }}</h4>
+                            <p class="card-text">Collection Officers</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-primary-dark">
+                    <small><i class="fas fa-info-circle"></i> Active officers in system</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="total_customers">{{ total_customers }}</h4>
+                            <p class="card-text">Total Customers</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-friends fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-success-dark">
+                    <small><i class="fas fa-chart-line"></i> Registered customers</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="total_transactions">{{ total_transactions }}</h4>
+                            <p class="card-text">Total Transactions</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exchange-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-info-dark">
+                    <small><i class="fas fa-history"></i> All time transactions</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="pending_loans">{{ pending_loans|default:0 }}</h4>
+                            <p class="card-text">Pending Loans</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-hourglass-half fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-warning-dark">
+                    <small><i class="fas fa-clock"></i> Awaiting approval</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt text-warning"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'review_loans' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-hand-holding-usd text-primary"></i> Review Loan Applications</span>
+                            {% if pending_loans %}
+                                <span class="badge badge-warning badge-pill">{{ pending_loans }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'review_submissions' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-clipboard-check text-success"></i> Review Daily Submissions
+                        </a>
+                        <a href="/admin/" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cogs text-info"></i> System Administration
+                        </a>
+                        <a href="{% url 'export_contributions_pdf' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-export text-secondary"></i> Export Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Notifications -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bell text-info"></i>
+                        Recent Notifications
+                    </h5>
+                    {% if unread_notifications %}
+                        <span class="badge badge-danger">{{ unread_notifications }} unread</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if recent_notifications %}
+                        <div class="list-group list-group-flush">
+                            {% for notification in recent_notifications %}
+                                <div class="list-group-item {% if not notification.is_read %}list-group-item-light border-left-primary{% endif %}">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ notification.title }}</h6>
+                                        <small class="text-muted">{{ notification.created_at|timesince }}</small>
+                                    </div>
+                                    <p class="mb-1 small">{{ notification.message|truncatewords:15 }}</p>
+                                    {% if not notification.is_read %}
+                                        <small class="text-primary"><i class="fas fa-circle"></i> New</small>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'notifications_list' %}" class="btn btn-outline-primary btn-sm">
+                                View All Notifications
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                            <p>No notifications yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-server text-success"></i>
+                        System Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">Daily Submissions</small>
+                            <small class="text-success">{{ total_submissions }} total</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">Active Officers</small>
+                            <small class="text-primary">{{ total_officers }} online</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" style="width: 92%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">System Health</small>
+                            <small class="text-success">
+                                <span class="real-time-indicator"></span>
+                                Excellent
+                            </small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 98%"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i>
+                            Last updated: <span id="system-timestamp">{{ "now"|date:"M d, Y H:i" }}</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history text-info"></i>
+                        System Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="border-right">
+                                <h4 class="font-weight-bold text-primary">{{ total_officers }}</h4>
+                                <p class="text-muted mb-0">Collection Officers</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="border-right">
+                                <h4 class="font-weight-bold text-success">{{ total_customers }}</h4>
+                                <p class="text-muted mb-0">Active Customers</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="border-right">
+                                <h4 class="font-weight-bold text-info">{{ total_transactions }}</h4>
+                                <p class="text-muted mb-0">Total Transactions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <h4 class="font-weight-bold text-warning">{{ total_submissions }}</h4>
+                            <p class="text-muted mb-0">Daily Submissions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary {
+    border-left: 4px solid #007bff !important;
+}
+
+.bg-primary-dark {
+    background-color: rgba(0, 123, 255, 0.8) !important;
+}
+
+.bg-success-dark {
+    background-color: rgba(40, 167, 69, 0.8) !important;
+}
+
+.bg-info-dark {
+    background-color: rgba(23, 162, 184, 0.8) !important;
+}
+
+.bg-warning-dark {
+    background-color: rgba(255, 193, 7, 0.8) !important;
+}
+
+.opacity-75 {
+    opacity: 0.75;
+}
+
+.stat-updated {
+    animation: statPulse 0.5s ease-in-out;
+}
+
+@keyframes statPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update system timestamp every minute
+    setInterval(function() {
+        const timestamp = document.getElementById('system-timestamp');
+        if (timestamp) {
+            timestamp.textContent = new Date().toLocaleString();
+        }
+    }, 60000);
+});
+</script>
+{% endblock %}

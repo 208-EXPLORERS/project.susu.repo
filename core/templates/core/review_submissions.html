@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+  <h2>Review Daily Submissions</h2>
+  <table>
+    <tr>
+      <th>Officer</th>
+      <th>Total</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+    {% for sub in submissions %}
+    <tr>
+      <td>{{ sub.officer.user.username }}</td>
+      <td>GHS {{ sub.total_amount }}</td>
+      <td>{{ "Approved" if sub.approved else "Pending" }}</td>
+      <td>
+        {% if not sub.approved %}
+        <a href="{% url 'approve_submission' sub.id %}">Approve</a>
+        |
+        <a href="{% url 'export_contributions_pdf' %}" class="btn">📄 Export Contributions (PDF)</a>
+        |
+        <a href="{% url 'export_contributions_csv' %}" class="btn">📥 Export Contributions (CSV)</a>
+
+
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
+
