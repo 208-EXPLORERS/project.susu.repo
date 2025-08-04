@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+
+{% block title %}Reject Loan Application - Susu System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Loan Details Card -->
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Reject Loan Application
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Customer Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            {% if loan.customer.photo %}
+                                <img src="{{ loan.customer.photo.url }}" 
+                                     class="rounded-circle img-thumbnail" 
+                                     width="80" height="80" 
+                                     alt="{{ loan.customer.name }}">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" 
+                                     style="width: 80px; height: 80px;">
+                                    <i class="fas fa-user fa-2x text-white"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h5 class="mb-1">{{ loan.customer.name }}</h5>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-id-badge"></i> {{ loan.customer.customer_id }} • 
+                                <i class="fas fa-map-marker-alt"></i> {{ loan.customer.address }}
+                            </p>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-user-tie"></i> Officer: {{ loan.customer.officer.user.get_full_name|default:loan.customer.officer.user.username }}
+                            </p>
+                            {% if loan.customer.phone %}
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-phone"></i> 
+                                    <a href="tel:{{ loan.customer.phone }}">{{ loan.customer.phone }}</a>
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Loan Application Details -->
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            Loan Application Details
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr>
+                                        <td><strong>Amount Requested:</strong></td>
+                                        <td class="text-right">
+                                            <span class="h5 text-primary">GHS {{ loan.amount|floatformat:2 }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Purpose:</strong></td>
+                                        <td class="text-right">{{ loan.purpose }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Repayment Period:</strong></td>
+                                        <td class="text-right">{{ loan.repayment_period_months }} months</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Interest Rate:</strong></td>
+                                        <td class="text-right">{{ loan.interest_rate }}% per annum</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr>
+                                        <td><strong>Date Applied:</strong></td>
+                                        <td class="text-right">{{ loan.date_applied|date:"M d, Y H:i" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Current Status:</strong></td>
+                                        <td class="text-right">
+                                            <span class="badge badge-warning">{{ loan.get_status_display }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Customer Savings:</strong></td>
+                                        <td class="text-right">
+                                            <span class="text-success">GHS {{ loan.customer.total_savings|floatformat:2 }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Previous Loans:</strong></td>
+                                        <td class="text-right">{{ loan.customer.loans.count|add:"-1" }} applications</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        {% if loan.notes %}
+                            <hr>
+                            <div>
+                                <strong>Application Notes:</strong>
+                                <p class="mb-0 mt-2">{{ loan.notes }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Rejection Form -->
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="alert alert-danger">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-times-circle"></i>
+                                Rejection Confirmation
+                            </h6>
+                            <p class="mb-3">
+                                You are about to <strong>reject</strong> this loan application. 
+                                This action will notify the collection officer and cannot be easily undone.
+                            </p>
+                            
+                            <!-- Rejection Reason -->
+                            <div class="form-group">
+                                <label for="rejection_reason" class="form-label">
+                                    <i class="fas fa-comment-alt text-danger"></i>
+                                    Reason for Rejection <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" 
+                                          id="rejection_reason" 
+                                          name="rejection_reason" 
+                                          rows="4" 
+                                          placeholder="Please provide a detailed reason for rejecting this loan application..."
+                                          required></textarea>
+                                <div class="invalid-feedback">
+                                    Please provide a reason for rejection.
+                                </div>
+                                <small class="form-text text-muted">
+                                    This reason will be shared with the collection officer and may be visible to the customer.
+                                </small>
+                            </div>
+
+                            <!-- Common Rejection Reasons -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-list text-info"></i>
+                                    Quick Reasons (Click to Use)
+                                </label>
+                                <div class="d-flex flex-wrap">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 quick-reason" 
+                                            data-reason="Insufficient savings history - customer needs to build more savings before qualifying for a loan.">
+                                        Insufficient Savings
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 quick-reason" 
+                                            data-reason="Loan amount exceeds customer's savings capacity and repayment ability.">
+                                        Amount Too High
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 quick-reason" 
+                                            data-reason="Customer has irregular contribution pattern - need consistent savings record.">
+                                        Irregular Contributions
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 quick-reason" 
+                                            data-reason="Incomplete application - additional documentation or information required.">
+                                        Incomplete Application
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 quick-reason" 
+                                            data-reason="Customer already has an active loan - multiple loans not permitted.">
+                                        Existing Loan
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mr-2 mb-2 quick-reason" 
+                                            data-reason="Loan purpose does not align with our lending criteria and policies.">
+                                        Purpose Not Approved
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="form-group mt-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button type="submit" class="btn btn-danger btn-lg">
+                                        <i class="fas fa-times-circle"></i>
+                                        Confirm Rejection
+                                    </button>
+                                </div>
+                                <div>
+                                    <a href="{% url 'review_loans' %}" class="btn btn-outline-secondary btn-lg mr-2">
+                                        <i class="fas fa-arrow-left"></i>
+                                        Cancel
+                                    </a>
+                                    <a href="{% url 'approve_loan' loan.id %}" class="btn btn-success btn-lg">
+                                        <i class="fas fa-check-circle"></i>
+                                        Approve Instead
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Warning Notice -->
+                        <div class="alert alert-warning mt-3">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Important Notice
+                            </h6>
+                            <ul class="mb-0">
+                                <li>The collection officer will be notified immediately via the notification system</li>
+                                <li>The customer may be informed about the rejection through their officer</li>
+                                <li>This action will be logged in the system for audit purposes</li>
+                                <li>The customer can reapply after addressing the rejection reasons</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Customer Activity Summary -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line text-info"></i>
+                        Customer Activity Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-success">GHS {{ loan.customer.total_savings|floatformat:2 }}</h4>
+                                <small class="text-muted">Total Savings</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-info">{{ loan.customer.contributions.count }}</h4>
+                                <small class="text-muted">Total Contributions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-warning">{{ loan.customer.loans.count }}</h4>
+                                <small class="text-muted">Loan Applications</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-primary">
+                                {% if loan.customer.last_contribution_date %}
+                                    {{ loan.customer.last_contribution_date|timesince }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">Last Activity</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    const reasonTextarea = document.getElementById('rejection_reason');
+    const quickReasonButtons = document.querySelectorAll('.quick-reason');
+
+    // Quick reason button handlers
+    quickReasonButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const reason = this.getAttribute('data-reason');
+            reasonTextarea.value = reason;
+            reasonTextarea.focus();
+            validateField(reasonTextarea);
+            
+            // Highlight the selected button temporarily
+            this.classList.add('btn-primary');
+            this.classList.remove('btn-outline-secondary');
+            setTimeout(() => {
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-outline-secondary');
+            }, 1000);
+        });
+    });
+
+    // Real-time form validation
+    function validateField(field) {
+        const isValid = field.checkValidity();
+        field.classList.remove('is-valid', 'is-invalid');
+        field.classList.add(isValid ? 'is-valid' : 'is-invalid');
+        return isValid;
+    }
+
+    // Add validation listener
+    if (reasonTextarea) {
+        reasonTextarea.addEventListener('blur', () => validateField(reasonTextarea));
+        reasonTextarea.addEventListener('input', function() {
+            if (this.value.trim().length > 10) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const isValid = form.checkValidity();
+        form.classList.add('was-validated');
+
+        // Additional validation for reason length
+        const reason = reasonTextarea.value.trim();
+        if (reason.length < 10) {
+            reasonTextarea.classList.add('is-invalid');
+            reasonTextarea.focus();
+            return;
+        }
+
+        if (isValid) {
+            // Show confirmation dialog
+            const confirmMessage = `Are you sure you want to REJECT this loan application for GHS {{ loan.amount|floatformat:2 }}?\n\nCustomer: {{ loan.customer.name }}\nReason: ${reason.substring(0, 100)}${reason.length > 100 ? '...' : ''}\n\nThis action cannot be easily undone.`;
+            
+            if (confirm(confirmMessage)) {
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rejecting...';
+                submitBtn.disabled = true;
+
+                // Disable all other buttons
+                document.querySelectorAll('button, a.btn').forEach(btn => {
+                    if (btn !== submitBtn) {
+                        btn.disabled = true;
+                        btn.classList.add('disabled');
+                    }
+                });
+
+                // Submit the form
+                setTimeout(() => {
+                    form.submit();
+                }, 1000);
+            }
+        } else {
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Escape: Go back to review loans
+        if (e.key === 'Escape') {
+            if (confirm('Cancel loan rejection and go back?')) {
+                window.location.href = "{% url 'review_loans' %}";
+            }
+        }
+        
+        // Ctrl/Cmd + Enter: Submit form
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // Auto-focus reason textarea
+    if (reasonTextarea) {
+        reasonTextarea.focus();
+    }
+
+    // Add click-to-call functionality
+    document.querySelectorAll('a[href^="tel:"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            if (!confirm('Call ' + this.textContent.trim() + '?')) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Character counter for rejection reason
+    if (reasonTextarea) {
+        const counterElement = document.createElement('small');
+        counterElement.className = 'form-text text-muted text-right';
+        counterElement.style.display = 'block';
+        reasonTextarea.parentNode.appendChild(counterElement);
+
+        function updateCounter() {
+            const length = reasonTextarea.value.length;
+            counterElement.textContent = `${length} characters`;
+            
+            if (length < 10) {
+                counterElement.className = 'form-text text-danger text-right';
+                counterElement.textContent = `${length} characters (minimum 10 required)`;
+            } else if (length > 500) {
+                counterElement.className = 'form-text text-warning text-right';
+                counterElement.textContent = `${length} characters (consider being more concise)`;
+            } else {
+                counterElement.className = 'form-text text-success text-right';
+            }
+        }
+
+        reasonTextarea.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+
+    // Show warning about rejection impact
+    setTimeout(() => {
+        const warningTooltip = `
+            <div class="alert alert-warning alert-dismissible fade show position-fixed" style="top: 20px; left: 20px; z-index: 1050; max-width: 350px;">
+                <h6><i class="fas fa-info-circle"></i> Rejection Impact</h6>
+                <p class="mb-0 small">
+                    Rejecting this loan will immediately notify the collection officer and may affect the customer's future loan eligibility. 
+                    Consider if the issues can be resolved with additional information first.
+                </p>
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        `;
+
+        if (!localStorage.getItem('loan_rejection_warning_shown')) {
+            document.body.insertAdjacentHTML('beforeend', warningTooltip);
+            localStorage.setItem('loan_rejection_warning_shown', 'true');
+        }
+    }, 2000);
+});
+</script>
+{% endblock %}
