@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Contribution - {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Customer Info Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            {% if customer.photo %}
+                                <img src="{{ customer.photo.url }}" 
+                                     class="rounded-circle img-thumbnail" 
+                                     width="60" height="60" 
+                                     alt="{{ customer.name }}">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mb-1">{{ customer.name }}</h5>
+                            <p class="text-muted mb-1">{{ customer.customer_id }} • {{ customer.address }}</p>
+                            <span class="badge badge-{% if customer.status == 'active' %}success{% else %}warning{% endif %}">
+                                {{ customer.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <h4 class="text-success mb-0">GHS {{ customer.total_savings|floatformat:2 }}</h4>
+                            <small class="text-muted">Total Savings</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Contribution Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus-circle text-success"></i>
+                        Add Contribution for {{ customer.name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Contribution Amount -->
+                        <div class="form-group">
+                            <label for="{{ form.amount.id_for_label }}" class="form-label">
+                                <i class="fas fa-coins text-success"></i>
+                                {{ form.amount.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">GHS</span>
+                                </div>
+                                {{ form.amount }}
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" 
+                                            data-toggle="dropdown" aria-expanded="false">
+                                        Quick Amount
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <button type="button" class="dropdown-item quick-amount" data-amount="5">GHS 5</button>
+                                        <button type="button" class="dropdown-item quick-amount" data-amount="10">GHS 10</button>
+                                        <button type="button" class="dropdown-item quick-amount" data-amount="20">GHS 20</button>
+                                        <button type="button" class="dropdown-item quick-amount" data-amount="50">GHS 50</button>
+                                        <button type="button" class="dropdown-item quick-amount" data-amount="100">GHS 100</button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if form.amount.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.amount.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Enter the contribution amount (minimum GHS 1.00)
+                            </small>
+                        </div>
+
+                        <!-- Contribution Notes -->
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                <i class="fas fa-sticky-note text-info"></i>
+                                {{ form.notes.label }}
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Optional notes about this contribution
+                            </small>
+                        </div>
+
+                        <!-- Contribution Summary -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-calculator"></i>
+                                Contribution Summary
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Current Total:</strong> GHS {{ customer.total_savings|floatformat:2 }}<br>
+                                    <strong>New Amount:</strong> <span id="new-amount">GHS 0.00</span><br>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>New Total:</strong> <span id="new-total" class="text-success">GHS {{ customer.total_savings|floatformat:2 }}</span><br>
+                                    <strong>Date:</strong> {% now "M d, Y" %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-group mt-4">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save"></i>
+                                        Record Contribution
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary btn-lg ml-2">
+                                        <i class="fas fa-undo"></i>
+                                        Clear
+                                    </button>
+                                </div>
+                                <div>
+                                    <a href="{% url 'customer_detail' customer.id %}" class="btn btn-outline-info btn-lg mr-2">
+                                        <i class="fas fa-eye"></i>
+                                        View Customer
+                                    </a>
+                                    <a href="{% url 'officer_customers' %}" class="btn btn-outline-primary btn-lg">
+                                        <i class="fas fa-arrow-left"></i>
+                                        Back to Customers
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Important Notes -->
+                        <div class="alert alert-warning mt-3">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Important Notes
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Contributions are recorded for today's date ({% now "M d, Y" %})</li>
+                                <li>Only one contribution per customer per day is allowed</li>
+                                <li>All contributions require super admin approval</li>
+                                <li>Minimum contribution amount is GHS 1.00</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recent Contributions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history text-info"></i>
+                        Recent Contributions - {{ customer.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if customer.contributions.all %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contribution in customer.contributions.all|slice:":5" %}
+                                        <tr>
+                                            <td>{{ contribution.date }}</td>
+                                            <td>
+                                                <strong class="text-success">
+                                                    GHS {{ contribution.amount|floatformat:2 }}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                {% if contribution.approved %}
+                                                    <span class="badge badge-success">Approved</span>
+                                                {% else %}
+                                                    <span class="badge badge-warning">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if contribution.notes %}
+                                                    {{ contribution.notes|truncatewords:5 }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if customer.contributions.count > 5 %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'customer_detail' customer.id %}" class="btn btn-outline-primary">
+                                    View All {{ customer.contributions.count }} Contributions
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-coins fa-2x mb-2"></i>
+                            <p>No previous contributions</p>
+                            <small>This will be {{ customer.name }}'s first contribution!</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    const amountInput = document.getElementById('id_amount');
+    const notesInput = document.getElementById('id_notes');
+    const currentTotal = {{ customer.total_savings|floatformat:2 }};
+
+    // Real-time form validation
+    function validateField(field) {
+        const isValid = field.checkValidity();
+        field.classList.remove('is-valid', 'is-invalid');
+        field.classList.add(isValid ? 'is-valid' : 'is-invalid');
+        return isValid;
+    }
+
+    // Update contribution summary
+    function updateSummary() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const newTotal = currentTotal + amount;
+        
+        document.getElementById('new-amount').textContent = `GHS ${amount.toFixed(2)}`;
+        document.getElementById('new-total').textContent = `GHS ${newTotal.toFixed(2)}`;
+        
+        // Update new total color based on amount
+        const newTotalElement = document.getElementById('new-total');
+        if (amount > 0) {
+            newTotalElement.className = 'text-success font-weight-bold';
+        } else {
+            newTotalElement.className = 'text-success';
+        }
+    }
+
+    // Quick amount buttons
+    document.querySelectorAll('.quick-amount').forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = this.getAttribute('data-amount');
+            amountInput.value = amount;
+            amountInput.focus();
+            validateField(amountInput);
+            updateSummary();
+        });
+    });
+
+    // Add validation listeners
+    if (amountInput) {
+        amountInput.addEventListener('blur', () => validateField(amountInput));
+        amountInput.addEventListener('input', function() {
+            updateSummary();
+            // Remove invalid class on input if amount is valid
+            if (this.value && parseFloat(this.value) > 0) {
+                this.classList.remove('is-invalid');
+            }
+        });
+        
+        // Format amount on blur
+        amountInput.addEventListener('blur', function() {
+            const value = parseFloat(this.value);
+            if (!isNaN(value) && value > 0) {
+                this.value = value.toFixed(2);
+            }
+        });
+    }
+
+    if (notesInput) {
+        notesInput.addEventListener('blur', () => validateField(notesInput));
+    }
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const isValid = form.checkValidity();
+        form.classList.add('was-validated');
+
+        // Additional validation for amount
+        const amount = parseFloat(amountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            amountInput.classList.add('is-invalid');
+            amountInput.focus();
+            return;
+        }
+
+        if (isValid) {
+            // Show confirmation dialog
+            const confirmMessage = `Record contribution of GHS ${amount.toFixed(2)} for ${customer.name}?`;
+            if (confirm(confirmMessage)) {
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recording...';
+                submitBtn.disabled = true;
+
+                // Submit the form
+                setTimeout(() => {
+                    form.submit();
+                }, 500);
+            }
+        } else {
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    // Reset form handler
+    form.addEventListener('reset', function() {
+        form.classList.remove('was-validated');
+        document.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
+            el.classList.remove('is-valid', 'is-invalid');
+        });
+        updateSummary();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + S: Submit form
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+        
+        // Escape: Go back
+        if (e.key === 'Escape') {
+            window.location.href = "{% url 'customer_detail' customer.id %}";
+        }
+
+        // Number keys for quick amounts (when not in input field)
+        if (!e.ctrlKey && !e.metaKey && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            const quickAmounts = {
+                '1': '5',
+                '2': '10', 
+                '3': '20',
+                '4': '50',
+                '5': '100'
+            };
+            
+            if (quickAmounts[e.key]) {
+                e.preventDefault();
+                amountInput.value = quickAmounts[e.key];
+                amountInput.focus();
+                validateField(amountInput);
+                updateSummary();
+            }
+        }
+    });
+
+    // Auto-focus amount input
+    if (amountInput) {
+        amountInput.focus();
+    }
+
+    // Initialize summary
+    updateSummary();
+
+    // Show keyboard shortcuts help
+    const helpTooltip = `
+        <div class="alert alert-info alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 1050; max-width: 300px;">
+            <h6><i class="fas fa-keyboard"></i> Quick Tips</h6>
+            <ul class="mb-0 small">
+                <li><kbd>1-5</kbd> - Quick amounts (5, 10, 20, 50, 100)</li>
+                <li><kbd>Ctrl+S</kbd> - Submit form</li>
+                <li><kbd>Esc</kbd> - Go back</li>
+            </ul>
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+
+    // Show help after a delay
+    setTimeout(() => {
+        if (!localStorage.getItem('contribution_help_shown')) {
+            document.body.insertAdjacentHTML('beforeend', helpTooltip);
+            localStorage.setItem('contribution_help_shown', 'true');
+        }
+    }, 3000);
+});
+</script>
+{% endblock %}

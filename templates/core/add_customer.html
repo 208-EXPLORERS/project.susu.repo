@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Customer - Susu System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-user-plus text-primary"></i>
+                        Add New Customer
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Customer Name -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user text-primary"></i>
+                                        {{ form.name.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Enter the customer's full name
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                        <i class="fas fa-phone text-success"></i>
+                                        {{ form.phone.label }}
+                                    </label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Optional: Customer's phone number
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="form-group">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">
+                                <i class="fas fa-map-marker-alt text-info"></i>
+                                {{ form.address.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.address.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Customer's address or location (used for Customer ID generation)
+                            </small>
+                        </div>
+
+                        <!-- Photo Upload (Optional) -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-camera text-warning"></i>
+                                Customer Photo (Optional)
+                            </label>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="customer-photo" 
+                                       name="photo" accept="image/*" data-preview="#photo-preview">
+                                <label class="custom-file-label" for="customer-photo">Choose photo...</label>
+                            </div>
+                            <div id="photo-preview" class="mt-2"></div>
+                            <small class="form-text text-muted">
+                                Upload a photo of the customer (JPG, PNG, max 2MB)
+                            </small>
+                        </div>
+
+                        <!-- Customer ID Preview -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-id-card text-secondary"></i>
+                                Customer ID Preview
+                            </label>
+                            <div class="form-control-plaintext bg-light p-2 rounded">
+                                <span id="customer-id-preview" class="badge badge-secondary">
+                                    Will be generated automatically
+                                </span>
+                                <small class="text-muted ml-2">
+                                    Based on address and customer count
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-group mt-4">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save"></i>
+                                        Add Customer
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary btn-lg ml-2">
+                                        <i class="fas fa-undo"></i>
+                                        Reset
+                                    </button>
+                                </div>
+                                <div>
+                                    <a href="{% url 'officer_customers' %}" class="btn btn-outline-primary btn-lg">
+                                        <i class="fas fa-arrow-left"></i>
+                                        Back to Customers
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Help Text -->
+                        <div class="alert alert-info mt-3">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle"></i>
+                                Important Information
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Customer ID will be automatically generated based on address</li>
+                                <li>All customers start with "Active" status</li>
+                                <li>Phone number is optional but recommended for contact</li>
+                                <li>Photo helps with customer identification</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt text-warning"></i>
+                        After Adding Customer
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Once you add this customer, you can:</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <i class="fas fa-coins fa-2x text-success mb-2"></i>
+                                <h6>Record Contribution</h6>
+                                <small class="text-muted">Add daily savings</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <i class="fas fa-hand-holding-usd fa-2x text-warning mb-2"></i>
+                                <h6>Apply for Loan</h6>
+                                <small class="text-muted">Submit loan application</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                                <h6>Track Progress</h6>
+                                <small class="text-muted">Monitor savings growth</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    const nameInput = document.getElementById('id_name');
+    const addressInput = document.getElementById('id_address');
+    const phoneInput = document.getElementById('id_phone');
+    const photoInput = document.getElementById('customer-photo');
+    const previewElement = document.getElementById('customer-id-preview');
+
+    // Real-time form validation
+    function validateField(field) {
+        const isValid = field.checkValidity();
+        field.classList.remove('is-valid', 'is-invalid');
+        field.classList.add(isValid ? 'is-valid' : 'is-invalid');
+        return isValid;
+    }
+
+    // Add validation listeners
+    [nameInput, addressInput, phoneInput].forEach(input => {
+        if (input) {
+            input.addEventListener('blur', () => validateField(input));
+            input.addEventListener('input', updateCustomerIdPreview);
+        }
+    });
+
+    // Update Customer ID preview
+    function updateCustomerIdPreview() {
+        const address = addressInput?.value.trim() || '';
+        const addressCode = address.length >= 2 ? address.substring(0, 2).toUpperCase() : 'XX';
+        const numberCode = '001'; // This would be calculated based on existing customers
+        
+        if (address) {
+            previewElement.textContent = `${addressCode}${numberCode}`;
+            previewElement.className = 'badge badge-primary';
+        } else {
+            previewElement.textContent = 'Will be generated automatically';
+            previewElement.className = 'badge badge-secondary';
+        }
+    }
+
+    // Photo preview functionality
+    if (photoInput) {
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const label = this.nextElementSibling;
+            const preview = document.getElementById('photo-preview');
+            
+            if (file) {
+                label.textContent = file.name;
+                
+                // Show preview if it's an image
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `
+                            <div class="mt-2">
+                                <img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                                <p class="small text-muted mt-1">Preview: ${file.name}</p>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                label.textContent = 'Choose photo...';
+                preview.innerHTML = '';
+            }
+        });
+    }
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const isValid = form.checkValidity();
+        form.classList.add('was-validated');
+
+        if (isValid) {
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding Customer...';
+            submitBtn.disabled = true;
+
+            // Submit the form
+            setTimeout(() => {
+                form.submit();
+            }, 500);
+        } else {
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    // Reset form handler
+    form.addEventListener('reset', function() {
+        form.classList.remove('was-validated');
+        document.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
+            el.classList.remove('is-valid', 'is-invalid');
+        });
+        updateCustomerIdPreview();
+        document.getElementById('photo-preview').innerHTML = '';
+        if (photoInput) {
+            photoInput.nextElementSibling.textContent = 'Choose photo...';
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + S: Submit form
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+        
+        // Escape: Go back
+        if (e.key === 'Escape') {
+            window.location.href = "{% url 'officer_customers' %}";
+        }
+    });
+
+    // Initialize preview
+    updateCustomerIdPreview();
+});
+</script>
+{% endblock %}

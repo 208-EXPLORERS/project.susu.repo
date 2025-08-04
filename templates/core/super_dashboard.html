@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Super Admin Dashboard - Susu System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-tachometer-alt text-primary"></i>
+                    Super Admin Dashboard
+                </h1>
+                <div class="text-muted">
+                    <span class="real-time-indicator"></span>
+                    Real-time Updates Active
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="total_officers">{{ total_officers }}</h4>
+                            <p class="card-text">Collection Officers</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="total_customers">{{ total_customers }}</h4>
+                            <p class="card-text">Total Customers</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-friends fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="total_transactions">{{ total_transactions }}</h4>
+                            <p class="card-text">Total Transactions</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exchange-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" data-stat-type="pending_loans">{{ pending_loans|default:0 }}</h4>
+                            <p class="card-text">Pending Loans</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt text-warning"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'review_loans' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-gavel text-primary"></i>
+                            Review Loan Applications
+                            {% if pending_loans > 0 %}
+                                <span class="badge badge-warning float-right">{{ pending_loans }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'review_submissions' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-clipboard-check text-success"></i>
+                            Review Daily Submissions
+                        </a>
+                        <a href="{% url 'export_contributions_pdf' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-pdf text-danger"></i>
+                            Export Contributions (PDF)
+                        </a>
+                        <a href="{% url 'export_contributions_csv' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-csv text-info"></i>
+                            Export Contributions (CSV)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Notifications -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bell text-info"></i>
+                        Recent Notifications
+                        {% if unread_notifications > 0 %}
+                            <span class="badge badge-danger">{{ unread_notifications }}</span>
+                        {% endif %}
+                    </h5>
+                    <a href="{% url 'notifications_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_notifications %}
+                        <div class="list-group list-group-flush">
+                            {% for notification in recent_notifications %}
+                                <div class="list-group-item {% if not notification.is_read %}bg-light{% endif %}">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            {% if notification.notification_type == 'loan_application' %}
+                                                <i class="fas fa-hand-holding-usd text-warning"></i>
+                                            {% elif notification.notification_type == 'daily_submission' %}
+                                                <i class="fas fa-calendar-day text-info"></i>
+                                            {% elif notification.notification_type == 'system_alert' %}
+                                                <i class="fas fa-exclamation-triangle text-danger"></i>
+                                            {% else %}
+                                                <i class="fas fa-info-circle text-primary"></i>
+                                            {% endif %}
+                                            {{ notification.title }}
+                                        </h6>
+                                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                    </div>
+                                    <p class="mb-1">{{ notification.message|truncatewords:20 }}</p>
+                                    {% if not notification.is_read %}
+                                        <small class="text-primary">
+                                            <i class="fas fa-circle" style="font-size: 8px;"></i>
+                                            New
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-bell-slash fa-3x mb-3"></i>
+                            <p>No recent notifications</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line text-success"></i>
+                        System Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-success" data-stat-type="daily_submissions">{{ total_submissions }}</h4>
+                                <small class="text-muted">Daily Submissions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-info">
+                                    <span class="real-time-indicator"></span>
+                                    Online
+                                </h4>
+                                <small class="text-muted">System Status</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-primary">3s</h4>
+                                <small class="text-muted">Update Interval</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning" id="active-sessions">1</h4>
+                            <small class="text-muted">Active Sessions</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh system stats periodically
+    setInterval(function() {
+        // This would call an API endpoint to get updated stats
+        console.log('Refreshing system stats...');
+        
+        // Update active sessions count (example)
+        const sessionsElement = document.getElementById('active-sessions');
+        if (sessionsElement) {
+            // This would come from an API call
+            const randomCount = Math.floor(Math.random() * 10) + 1;
+            sessionsElement.textContent = randomCount;
+        }
+    }, 30000); // Every 30 seconds
+});
+</script>
+{% endblock %}

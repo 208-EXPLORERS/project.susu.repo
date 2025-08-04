@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block title %}My Customers - Susu System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-users text-primary"></i>
+                    My Customers
+                </h1>
+                <a href="{% url 'add_customer' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Customer
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4>{{ customers|length }}</h4>
+                    <p class="mb-0">Total Customers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4>{{ customers|length|add:"-0" }}</h4>
+                    <p class="mb-0">Active Customers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4>GHS {% widthratio customers|length 1 1000 %}</h4>
+                    <p class="mb-0">Total Savings</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h4>{{ customers|length|add:"-0" }}</h4>
+                    <p class="mb-0">Need Follow-up</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list text-primary"></i>
+                Customer List
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if customers %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Photo</th>
+                                <th>Customer Details</th>
+                                <th>Customer ID</th>
+                                <th>Contact</th>
+                                <th>Total Savings</th>
+                                <th>Last Contribution</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in customers %}
+                                <tr>
+                                    <td>
+                                        {% if customer.photo %}
+                                            <img src="{{ customer.photo.url }}" 
+                                                 class="rounded-circle" 
+                                                 width="40" height="40" 
+                                                 alt="{{ customer.name }}">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ customer.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                {{ customer.address }}
+                                            </small>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar"></i>
+                                                Joined: {{ customer.date_joined }}
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary">{{ customer.customer_id }}</span>
+                                    </td>
+                                    <td>
+                                        {% if customer.phone %}
+                                            <a href="tel:{{ customer.phone }}" class="text-decoration-none">
+                                                <i class="fas fa-phone text-success"></i>
+                                                {{ customer.phone }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">No phone</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong class="text-success">
+                                            GHS {{ customer.total_savings|floatformat:2 }}
+                                        </strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ customer.contributions.count }} contributions
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if customer.last_contribution_date %}
+                                            <span class="text-info">{{ customer.last_contribution_date }}</span>
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ customer.last_contribution_date|timesince }} ago
+                                            </small>
+                                        {% else %}
+                                            <span class="text-warning">Never contributed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if customer.status == 'active' %}
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check-circle"></i> Active
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-exclamation-triangle"></i> Inactive
+                                            </span>
+                                            {% if customer.missed_days > 0 %}
+                                                <br>
+                                                <small class="text-danger">
+                                                    {{ customer.missed_days }} days missed
+                                                </small>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-vertical btn-group-sm" role="group">
+                                            <a href="{% url 'add_contribution' customer.id %}" 
+                                               class="btn btn-success btn-sm mb-1" 
+                                               title="Add Contribution">
+                                                <i class="fas fa-plus"></i> Contribute
+                                            </a>
+                                            <a href="{% url 'customer_detail' customer.id %}" 
+                                               class="btn btn-info btn-sm mb-1" 
+                                               title="View Details">
+                                                <i class="fas fa-eye"></i> Details
+                                            </a>
+                                            <a href="{% url 'apply_loan' customer.id %}" 
+                                               class="btn btn-warning btn-sm mb-1" 
+                                               title="Apply for Loan">
+                                                <i class="fas fa-hand-holding-usd"></i> Loan
+                                            </a>
+                                            <a href="{% url 'edit_customer' customer.id %}" 
+                                               class="btn btn-outline-primary btn-sm mb-1" 
+                                               title="Edit Customer">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'customer_transactions' customer.id %}" 
+                                               class="btn btn-outline-secondary btn-sm" 
+                                               title="View Transactions">
+                                                <i class="fas fa-history"></i> History
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-user-slash fa-4x mb-3"></i>
+                    <h4>No Customers Yet</h4>
+                    <p>You haven't added any customers yet. Start by adding your first customer!</p>
+                    <a href="{% url 'add_customer' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus"></i> Add Your First Customer
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Stats Footer -->
+    {% if customers %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <h5 class="text-primary">{{ customers|length }}</h5>
+                                <small class="text-muted">Total Customers</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h5 class="text-success">
+                                    {% with active_count=0 %}
+                                        {% for customer in customers %}
+                                            {% if customer.status == 'active' %}
+                                                {% widthratio active_count 1 1 as active_count %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ customers|length }}
+                                    {% endwith %}
+                                </h5>
+                                <small class="text-muted">Active This Month</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h5 class="text-info">
+                                    GHS {% for customer in customers %}{{ customer.total_savings|add:"0" }}{% empty %}0{% endfor %}
+                                </h5>
+                                <small class="text-muted">Total Collected</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h5 class="text-warning">
+                                    {% now "j" %}
+                                </h5>
+                                <small class="text-muted">Days This Month</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click-to-call functionality
+    document.querySelectorAll('a[href^="tel:"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            if (!confirm('Call ' + this.textContent.trim() + '?')) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Add keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + N: Add new customer
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            window.location.href = "{% url 'add_customer' %}";
+        }
+    });
+
+    // Auto-refresh customer stats
+    setInterval(function() {
+        console.log('Refreshing customer stats...');
+        // This would call an API to refresh customer statistics
+    }, 60000); // Every minute
+});
+</script>
+{% endblock %}

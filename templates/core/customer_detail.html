@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ customer.name }} - Customer Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-user text-primary"></i>
+                    {{ customer.name }}
+                    <span class="badge badge-{% if customer.status == 'active' %}success{% else %}warning{% endif %} ml-2">
+                        {{ customer.get_status_display }}
+                    </span>
+                </h1>
+                <div>
+                    <a href="{% url 'edit_customer' customer.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit Customer
+                    </a>
+                    <a href="{% url 'officer_customers' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Customers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Customer Information -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-id-card text-primary"></i>
+                        Customer Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if customer.photo %}
+                            <img src="{{ customer.photo.url }}" 
+                                 class="rounded-circle img-thumbnail" 
+                                 width="120" height="120" 
+                                 alt="{{ customer.name }}">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" 
+                                 style="width: 120px; height: 120px;">
+                                <i class="fas fa-user fa-3x text-white"></i>
+                            </div>
+                        {% endif %}
+                        <h5 class="mt-3">{{ customer.name }}</h5>
+                        <p class="text-muted">{{ customer.customer_id }}</p>
+                    </div>
+
+                    <table class="table table-sm">
+                        <tr>
+                            <td><i class="fas fa-map-marker-alt text-info"></i> Address:</td>
+                            <td>{{ customer.address }}</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-phone text-success"></i> Phone:</td>
+                            <td>
+                                {% if customer.phone %}
+                                    <a href="tel:{{ customer.phone }}">{{ customer.phone }}</a>
+                                {% else %}
+                                    <span class="text-muted">Not provided</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-calendar text-warning"></i> Joined:</td>
+                            <td>{{ customer.date_joined }}</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-user-tie text-primary"></i> Officer:</td>
+                            <td>{{ customer.officer.user.get_full_name|default:customer.officer.user.username }}</td>
+                        </tr>
+                        {% if customer.missed_days > 0 %}
+                        <tr>
+                            <td><i class="fas fa-exclamation-triangle text-danger"></i> Missed Days:</td>
+                            <td><span class="badge badge-danger">{{ customer.missed_days }}</span></td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt text-warning"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'add_contribution' customer.id %}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add Contribution
+                        </a>
+                        <a href="{% url 'apply_loan' customer.id %}" class="btn btn-warning">
+                            <i class="fas fa-hand-holding-usd"></i> Apply for Loan
+                        </a>
+                        <a href="{% url 'customer_transactions' customer.id %}" class="btn btn-info">
+                            <i class="fas fa-history"></i> View All Transactions
+                        </a>
+                        <a href="{% url 'edit_customer' customer.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit Customer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Savings Summary -->
+        <div class="col-md-8">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h3>GHS {{ total_savings|floatformat:2 }}</h3>
+                            <p class="mb-0">Total Savings</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h3>{{ contributions.count }}</h3>
+                            <p class="mb-0">Total Contributions</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h3>{{ loans.count }}</h3>
+                            <p class="mb-0">Loan Applications</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Contributions -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-coins text-success"></i>
+                        Recent Contributions
+                    </h5>
+                    <a href="{% url 'add_contribution' customer.id %}" class="btn btn-sm btn-success">
+                        <i class="fas fa-plus"></i> Add New
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if contributions %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Notes</th>
+                                        <th>Recorded By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contribution in contributions|slice:":10" %}
+                                        <tr>
+                                            <td>{{ contribution.date }}</td>
+                                            <td>
+                                                <strong class="text-success">
+                                                    GHS {{ contribution.amount|floatformat:2 }}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                {% if contribution.approved %}
+                                                    <span class="badge badge-success">Approved</span>
+                                                {% else %}
+                                                    <span class="badge badge-warning">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if contribution.notes %}
+                                                    {{ contribution.notes|truncatewords:5 }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ contribution.recorded_by.get_full_name|default:contribution.recorded_by.username }}
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if contributions.count > 10 %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'customer_transactions' customer.id %}" class="btn btn-outline-primary">
+                                    View All {{ contributions.count }} Contributions
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-coins fa-3x mb-3"></i>
+                            <p>No contributions yet</p>
+                            <a href="{% url 'add_contribution' customer.id %}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Add First Contribution
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Loans -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-hand-holding-usd text-warning"></i>
+                        Loan Applications
+                    </h5>
+                    <a href="{% url 'apply_loan' customer.id %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-plus"></i> Apply for Loan
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if loans %}
+                        <div class="row">
+                            {% for loan in loans %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-left-{% if loan.status == 'approved' %}success{% elif loan.status == 'rejected' %}danger{% elif loan.status == 'disbursed' %}info{% else %}warning{% endif %}" 
+                                         data-loan-id="{{ loan.id }}" data-current-status="{{ loan.status }}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="card-title">GHS {{ loan.amount|floatformat:2 }}</h6>
+                                                <span class="loan-status-badge badge badge-{% if loan.status == 'approved' %}success{% elif loan.status == 'rejected' %}danger{% elif loan.status == 'disbursed' %}info{% else %}warning{% endif %}">
+                                                    {{ loan.get_status_display }}
+                                                </span>
+                                            </div>
+                                            <p class="card-text small">
+                                                <strong>Purpose:</strong> {{ loan.purpose }}<br>
+                                                <strong>Applied:</strong> {{ loan.date_applied|date:"M d, Y" }}<br>
+                                                <strong>Period:</strong> {{ loan.repayment_period_months }} months
+                                            </p>
+                                            
+                                            {% if loan.status == 'approved' or loan.status == 'disbursed' %}
+                                                <div class="small text-success">
+                                                    <strong>Monthly Payment:</strong> GHS {{ loan.monthly_repayment|floatformat:2 }}<br>
+                                                    <strong>Total Repayment:</strong> GHS {{ loan.total_repayment|floatformat:2 }}
+                                                </div>
+                                            {% endif %}
+
+                                            {% if loan.status == 'disbursed' %}
+                                                <div class="progress mt-2" style="height: 10px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" 
+                                                         style="width: {{ loan.repayment_progress }}%">
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">
+                                                    Repaid: GHS {{ loan.amount_repaid|floatformat:2 }} / GHS {{ loan.total_repayment|floatformat:2 }}
+                                                </small>
+                                                {% if loan.remaining_balance > 0 %}
+                                                    <div class="mt-2">
+                                                        <a href="{% url 'add_loan_repayment' loan.id %}" class="btn btn-sm btn-outline-success">
+                                                            <i class="fas fa-money-bill"></i> Add Repayment
+                                                        </a>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+
+                                            <div class="approval-info mt-2"></div>
+                                            
+                                            <div class="last-updated small text-muted mt-2">
+                                                <i class="fas fa-sync-alt"></i>
+                                                <span id="timestamp-{{ loan.id }}">{{ loan.date_applied|date:"M d, Y H:i" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-hand-holding-usd fa-3x mb-3"></i>
+                            <p>No loan applications yet</p>
+                            <a href="{% url 'apply_loan' customer.id %}" class="btn btn-warning">
+                                <i class="fas fa-plus"></i> Apply for First Loan
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize loan status monitoring for this customer's loans
+    const loanElements = document.querySelectorAll('[data-loan-id]');
+    console.log(`Monitoring ${loanElements.length} loan(s) for customer {{ customer.name }}`);
+
+    // Add click-to-call functionality
+    document.querySelectorAll('a[href^="tel:"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            if (!confirm('Call ' + this.textContent.trim() + '?')) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // C: Add contribution
+        if (e.key === 'c' && !e.ctrlKey && !e.metaKey) {
+            const activeElement = document.activeElement;
+            if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                window.location.href = "{% url 'add_contribution' customer.id %}";
+            }
+        }
+        
+        // L: Apply for loan
+        if (e.key === 'l' && !e.ctrlKey && !e.metaKey) {
+            const activeElement = document.activeElement;
+            if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                window.location.href = "{% url 'apply_loan' customer.id %}";
+            }
+        }
+        
+        // E: Edit customer
+        if (e.key === 'e' && !e.ctrlKey && !e.metaKey) {
+            const activeElement = document.activeElement;
+            if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                window.location.href = "{% url 'edit_customer' customer.id %}";
+            }
+        }
+        
+        // Escape: Go back
+        if (e.key === 'Escape') {
+            window.location.href = "{% url 'officer_customers' %}";
+        }
+    });
+
+    // Show keyboard shortcuts help
+    const helpTooltip = `
+        <div class="alert alert-info alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 1050; max-width: 300px;">
+            <h6><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h6>
+            <ul class="mb-0 small">
+                <li><kbd>C</kbd> - Add Contribution</li>
+                <li><kbd>L</kbd> - Apply for Loan</li>
+                <li><kbd>E</kbd> - Edit Customer</li>
+                <li><kbd>Esc</kbd> - Go Back</li>
+            </ul>
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+
+    // Show help on first visit (you could use localStorage to track this)
+    setTimeout(() => {
+        if (!localStorage.getItem('customer_detail_help_shown')) {
+            document.body.insertAdjacentHTML('beforeend', helpTooltip);
+            localStorage.setItem('customer_detail_help_shown', 'true');
+        }
+    }, 2000);
+});
+</script>
+{% endblock %}
