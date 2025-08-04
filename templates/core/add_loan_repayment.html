@@ -1,0 +1,606 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Loan Repayment - {{ loan.customer.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Customer & Loan Info Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            {% if loan.customer.photo %}
+                                <img src="{{ loan.customer.photo.url }}" 
+                                     class="rounded-circle img-thumbnail" 
+                                     width="60" height="60" 
+                                     alt="{{ loan.customer.name }}">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-5">
+                            <h5 class="mb-1">{{ loan.customer.name }}</h5>
+                            <p class="text-muted mb-1">{{ loan.customer.customer_id }} • {{ loan.customer.address }}</p>
+                            <span class="badge badge-{% if loan.customer.status == 'active' %}success{% else %}warning{% endif %}">
+                                {{ loan.customer.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-5 text-right">
+                            <h4 class="text-primary mb-0">GHS {{ loan.amount|floatformat:2 }}</h4>
+                            <small class="text-muted">Original Loan Amount</small>
+                            <br>
+                            <span class="badge badge-{% if loan.status == 'disbursed' %}info{% elif loan.status == 'repaid' %}success{% else %}warning{% endif %}">
+                                {{ loan.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Loan Details -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle text-info"></i>
+                                Loan Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><i class="fas fa-calendar text-primary"></i> <strong>Disbursed:</strong></td>
+                                    <td>{{ loan.date_disbursed|date:"M d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-bullseye text-warning"></i> <strong>Purpose:</strong></td>
+                                    <td>{{ loan.purpose }}</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-clock text-info"></i> <strong>Term:</strong></td>
+                                    <td>{{ loan.repayment_period_months }} months</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-percentage text-danger"></i> <strong>Interest Rate:</strong></td>
+                                    <td>{{ loan.interest_rate }}% per annum</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-calendar-check text-success"></i> <strong>Monthly Payment:</strong></td>
+                                    <td><strong class="text-success">GHS {{ loan.monthly_repayment|floatformat:2 }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-calculator text-primary"></i> <strong>Total Repayment:</strong></td>
+                                    <td><strong class="text-primary">GHS {{ loan.total_repayment|floatformat:2 }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Repayment Progress -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-line text-success"></i>
+                                Repayment Progress
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <h4 class="text-success">GHS {{ loan.amount_repaid|floatformat:2 }}</h4>
+                                    <small class="text-muted">Paid</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-warning">GHS {{ loan.remaining_balance|floatformat:2 }}</h4>
+                                    <small class="text-muted">Remaining</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-info">{{ loan.repayment_progress|floatformat:1 }}%</h4>
+                                    <small class="text-muted">Complete</small>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ loan.repayment_progress }}%"
+                                     aria-valuenow="{{ loan.repayment_progress }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    {{ loan.repayment_progress|floatformat:1 }}%
+                                </div>
+                            </div>
+
+                            <!-- Payment Status -->
+                            {% if loan.repayment_progress >= 100 %}
+                                <div class="alert alert-success text-center">
+                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                    <h6>Loan Fully Repaid!</h6>
+                                    <small>This loan has been completely repaid.</small>
+                                </div>
+                            {% elif loan.is_overdue %}
+                                <div class="alert alert-danger text-center">
+                                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                    <h6>Payment Overdue</h6>
+                                    <small>This loan payment is overdue. Please make a payment as soon as possible.</small>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info text-center">
+                                    <i class="fas fa-clock fa-2x mb-2"></i>
+                                    <h6>Payment On Track</h6>
+                                    <small>Regular payments are being made on schedule.</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Repayment Form -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-money-bill-wave text-success"></i>
+                                Add Loan Repayment
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if loan.remaining_balance > 0 %}
+                                <form method="post" class="needs-validation" novalidate>
+                                    {% csrf_token %}
+                                    
+                                    <!-- Repayment Amount -->
+                                    <div class="form-group">
+                                        <label for="{{ form.amount.id_for_label }}" class="form-label">
+                                            <i class="fas fa-dollar-sign text-success"></i>
+                                            {{ form.amount.label }}
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group input-group-lg">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">GHS</span>
+                                            </div>
+                                            {{ form.amount }}
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" 
+                                                        data-toggle="dropdown" aria-expanded="false">
+                                                    Quick Amount
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <button type="button" class="dropdown-item quick-amount" 
+                                                            data-amount="{{ loan.monthly_repayment }}">
+                                                        Monthly Payment (GHS {{ loan.monthly_repayment|floatformat:2 }})
+                                                    </button>
+                                                    <button type="button" class="dropdown-item quick-amount" 
+                                                            data-amount="{{ loan.remaining_balance }}">
+                                                        Full Balance (GHS {{ loan.remaining_balance|floatformat:2 }})
+                                                    </button>
+                                                    <div class="dropdown-divider"></div>
+                                                    <button type="button" class="dropdown-item quick-amount" data-amount="50">GHS 50</button>
+                                                    <button type="button" class="dropdown-item quick-amount" data-amount="100">GHS 100</button>
+                                                    <button type="button" class="dropdown-item quick-amount" data-amount="200">GHS 200</button>
+                                                    <button type="button" class="dropdown-item quick-amount" data-amount="500">GHS 500</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% if form.amount.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.amount.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">
+                                            Maximum: GHS {{ loan.remaining_balance|floatformat:2 }} (remaining balance)
+                                        </small>
+                                    </div>
+
+                                    <!-- Payment Notes -->
+                                    <div class="form-group">
+                                        <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                            <i class="fas fa-sticky-note text-info"></i>
+                                            {{ form.notes.label }}
+                                        </label>
+                                        {{ form.notes }}
+                                        {% if form.notes.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.notes.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">
+                                            Payment method, receipt number, or other notes
+                                        </small>
+                                    </div>
+
+                                    <!-- Repayment Summary -->
+                                    <div class="alert alert-info">
+                                        <h6 class="alert-heading">
+                                            <i class="fas fa-calculator"></i>
+                                            Payment Summary
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <strong>Payment Amount:</strong><br>
+                                                <span id="payment-amount" class="h5 text-success">GHS 0.00</span>
+                                            </div>
+                                            <div class="col-6">
+                                                <strong>New Balance:</strong><br>
+                                                <span id="new-balance" class="h5 text-primary">GHS {{ loan.remaining_balance|floatformat:2 }}</span>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <strong>Payment Date:</strong><br>
+                                                {% now "M d, Y" %}
+                                            </div>
+                                            <div class="col-6">
+                                                <strong>New Progress:</strong><br>
+                                                <span id="new-progress" class="text-info">{{ loan.repayment_progress|floatformat:1 }}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Form Actions -->
+                                    <div class="form-group mt-4">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <button type="submit" class="btn btn-success btn-lg">
+                                                    <i class="fas fa-save"></i>
+                                                    Record Payment
+                                                </button>
+                                                <button type="reset" class="btn btn-outline-secondary btn-lg ml-2">
+                                                    <i class="fas fa-undo"></i>
+                                                    Clear
+                                                </button>
+                                            </div>
+                                            <div>
+                                                <a href="{% url 'customer_detail' loan.customer.id %}" class="btn btn-outline-info btn-lg mr-2">
+                                                    <i class="fas fa-eye"></i>
+                                                    View Customer
+                                                </a>
+                                                <a href="{% url 'officer_customers' %}" class="btn btn-outline-primary btn-lg">
+                                                    <i class="fas fa-arrow-left"></i>
+                                                    Back
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Important Notes -->
+                                    <div class="alert alert-warning mt-3">
+                                        <h6 class="alert-heading">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            Payment Guidelines
+                                        </h6>
+                                        <ul class="mb-0">
+                                            <li>Payments are recorded for today's date ({% now "M d, Y" %})</li>
+                                            <li>Cannot exceed the remaining loan balance</li>
+                                            <li>Partial payments are allowed and encouraged</li>
+                                            <li>Full payment will mark the loan as "Repaid"</li>
+                                        </ul>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <div class="text-center text-success py-4">
+                                    <i class="fas fa-check-circle fa-4x mb-3"></i>
+                                    <h4>Loan Fully Repaid!</h4>
+                                    <p>This loan has been completely repaid. No further payments are needed.</p>
+                                    <a href="{% url 'customer_detail' loan.customer.id %}" class="btn btn-primary">
+                                        <i class="fas fa-eye"></i>
+                                        View Customer Details
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Repayments -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history text-info"></i>
+                        Recent Repayments - {{ loan.customer.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if loan.repayments.all %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Balance After</th>
+                                        <th>Progress</th>
+                                        <th>Recorded By</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for repayment in loan.repayments.all|slice:":10" %}
+                                        <tr>
+                                            <td>{{ repayment.date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <strong class="text-success">
+                                                    GHS {{ repayment.amount|floatformat:2 }}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <span class="text-primary">
+                                                    GHS {{ loan.total_repayment|floatformat:2|add:0|sub:repayment.amount }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 10px; width: 60px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" 
+                                                         style="width: {{ repayment.amount|div:loan.total_repayment|mul:100 }}%">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ repayment.recorded_by.get_full_name|default:repayment.recorded_by.username }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                {% if repayment.notes %}
+                                                    <span class="text-truncate" style="max-width: 150px;" title="{{ repayment.notes }}">
+                                                        {{ repayment.notes|truncatewords:5 }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if loan.repayments.count > 10 %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'customer_detail' loan.customer.id %}" class="btn btn-outline-primary">
+                                    View All {{ loan.repayments.count }} Repayments
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                            <p>No repayments recorded yet</p>
+                            <small>This will be the first repayment for this loan!</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.needs-validation');
+    const amountInput = document.getElementById('id_amount');
+    const notesInput = document.getElementById('id_notes');
+    const remainingBalance = {{ loan.remaining_balance|floatformat:2 }};
+    const totalRepayment = {{ loan.total_repayment|floatformat:2 }};
+    const currentProgress = {{ loan.repayment_progress|floatformat:2 }};
+
+    // Real-time form validation
+    function validateField(field) {
+        const isValid = field.checkValidity();
+        field.classList.remove('is-valid', 'is-invalid');
+        field.classList.add(isValid ? 'is-valid' : 'is-invalid');
+        return isValid;
+    }
+
+    // Update payment summary
+    function updateSummary() {
+        const amount = parseFloat(amountInput.value) || 0;
+        const newBalance = Math.max(0, remainingBalance - amount);
+        const newProgress = Math.min(100, ((totalRepayment - newBalance) / totalRepayment) * 100);
+        
+        document.getElementById('payment-amount').textContent = `GHS ${amount.toFixed(2)}`;
+        document.getElementById('new-balance').textContent = `GHS ${newBalance.toFixed(2)}`;
+        document.getElementById('new-progress').textContent = `${newProgress.toFixed(1)}%`;
+        
+        // Update colors based on payment status
+        const paymentAmountElement = document.getElementById('payment-amount');
+        const newBalanceElement = document.getElementById('new-balance');
+        const newProgressElement = document.getElementById('new-progress');
+        
+        if (amount > 0) {
+            paymentAmountElement.className = 'h5 text-success font-weight-bold';
+        } else {
+            paymentAmountElement.className = 'h5 text-success';
+        }
+        
+        if (newBalance === 0) {
+            newBalanceElement.className = 'h5 text-success font-weight-bold';
+            newProgressElement.className = 'text-success font-weight-bold';
+        } else {
+            newBalanceElement.className = 'h5 text-primary';
+            newProgressElement.className = 'text-info';
+        }
+    }
+
+    // Quick amount buttons
+    document.querySelectorAll('.quick-amount').forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = parseFloat(this.getAttribute('data-amount'));
+            amountInput.value = amount.toFixed(2);
+            amountInput.focus();
+            validateField(amountInput);
+            updateSummary();
+        });
+    });
+
+    // Add validation listeners
+    if (amountInput) {
+        amountInput.addEventListener('blur', () => validateField(amountInput));
+        amountInput.addEventListener('input', function() {
+            updateSummary();
+            
+            const amount = parseFloat(this.value) || 0;
+            // Remove invalid class if amount is valid
+            if (amount > 0 && amount <= remainingBalance) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else if (amount > remainingBalance) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            }
+        });
+        
+        // Format amount on blur
+        amountInput.addEventListener('blur', function() {
+            const value = parseFloat(this.value);
+            if (!isNaN(value) && value > 0) {
+                this.value = value.toFixed(2);
+                updateSummary();
+            }
+        });
+    }
+
+    if (notesInput) {
+        notesInput.addEventListener('blur', () => validateField(notesInput));
+    }
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const isValid = form.checkValidity();
+        form.classList.add('was-validated');
+
+        // Additional validation for amount
+        const amount = parseFloat(amountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            amountInput.classList.add('is-invalid');
+            amountInput.focus();
+            return;
+        }
+
+        if (amount > remainingBalance) {
+            amountInput.classList.add('is-invalid');
+            amountInput.focus();
+            alert(`Payment amount cannot exceed remaining balance of GHS ${remainingBalance.toFixed(2)}`);
+            return;
+        }
+
+        if (isValid) {
+            const isFullPayment = amount >= remainingBalance;
+            const confirmMessage = isFullPayment 
+                ? `Record FULL PAYMENT of GHS ${amount.toFixed(2)} for ${loan.customer.name}?\n\nThis will mark the loan as FULLY REPAID.`
+                : `Record payment of GHS ${amount.toFixed(2)} for ${loan.customer.name}?\n\nRemaining balance will be GHS ${(remainingBalance - amount).toFixed(2)}`;
+            
+            if (confirm(confirmMessage)) {
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recording...';
+                submitBtn.disabled = true;
+
+                // Submit the form
+                setTimeout(() => {
+                    form.submit();
+                }, 500);
+            }
+        } else {
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    // Reset form handler
+    form.addEventListener('reset', function() {
+        form.classList.remove('was-validated');
+        document.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
+            el.classList.remove('is-valid', 'is-invalid');
+        });
+        updateSummary();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + S: Submit form
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+        
+        // Escape: Go back
+        if (e.key === 'Escape') {
+            window.location.href = "{% url 'customer_detail' loan.customer.id %}";
+        }
+
+        // Number keys for quick amounts (when not in input field)
+        if (!e.ctrlKey && !e.metaKey && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            const quickAmounts = {
+                '1': '{{ loan.monthly_repayment|floatformat:2 }}',
+                '2': '{{ loan.remaining_balance|floatformat:2 }}',
+                '3': '50',
+                '4': '100',
+                '5': '200'
+            };
+            
+            if (quickAmounts[e.key]) {
+                e.preventDefault();
+                amountInput.value = quickAmounts[e.key];
+                amountInput.focus();
+                validateField(amountInput);
+                updateSummary();
+            }
+        }
+    });
+
+    // Auto-focus amount input
+    if (amountInput && remainingBalance > 0) {
+        amountInput.focus();
+    }
+
+    // Initialize summary
+    updateSummary();
+
+    // Show keyboard shortcuts help
+    const helpTooltip = `
+        <div class="alert alert-info alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 1050; max-width: 300px;">
+            <h6><i class="fas fa-keyboard"></i> Quick Tips</h6>
+            <ul class="mb-0 small">
+                <li><kbd>1</kbd> - Monthly Payment</li>
+                <li><kbd>2</kbd> - Full Balance</li>
+                <li><kbd>3-5</kbd> - Quick amounts (50, 100, 200)</li>
+                <li><kbd>Ctrl+S</kbd> - Submit form</li>
+                <li><kbd>Esc</kbd> - Go back</li>
+            </ul>
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+
+    // Show help after a delay
+    setTimeout(() => {
+        if (!localStorage.getItem('repayment_help_shown') && remainingBalance > 0) {
+            document.body.insertAdjacentHTML('beforeend', helpTooltip);
+            localStorage.setItem('repayment_help_shown', 'true');
+        }
+    }, 3000);
+});
+</script>
+{% endblock %}
