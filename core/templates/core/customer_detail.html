@@ -1,4 +1,4 @@
-{% extends 'core/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ customer.name }} - Customer Details{% endblock %}
@@ -212,7 +212,7 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="stat-card p-3">
                 <div class="d-flex align-items-center">
-                    <div class="stat-icon {% if customer.days_since_last_contribution <= 7 %}bg-success{% else %}bg-danger{% endif %} text-white me-3">
+                    <div class="stat-icon {% if customer.days_since_last_contribution <= 7 %} bg-success{% else %}bg-danger{% endif %} text-white me-3">
                         <i class="fas fa-calendar-check"></i>
                     </div>
                     <div class="flex-grow-1 ms-3">
@@ -473,7 +473,7 @@
                     <span>&times;</span>
                 </button>
             </div>
-            <form method="post" action="{% comment %}{% url 'add_contribution' customer.id %}{% endcomment %}">
+            <form method="post" action="{% comment %}{% url 'add_contribution' customer.customer_id %}{% endcomment %}">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="form-group">
@@ -508,7 +508,7 @@
                     <span>&times;</span>
                 </button>
             </div>
-            <form method="post" action="{% comment %}{% url 'edit_customer' customer.id %}{% endcomment %}" enctype="multipart/form-data">
+            <form method="post" action="{% comment %}{% url 'edit_customer' customer.customer_id %}{% endcomment %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="row">
@@ -631,7 +631,7 @@ $(document).ready(function() {
 // Custom event listener for loan status changes
 document.addEventListener('loanStatusChanged', function(e) {
     const { loanData, previousStatus } = e.detail;
-    console.log(`Customer ${{{ customer.id }}} loan status changed: ${previousStatus} → ${loanData.status}`);
+    console.log(`Customer ${{ customer_id }} loan status changed: ${previousStatus} → ${loanData.status}`);
     
     // You could update customer stats here if needed
     // updateCustomerStats();

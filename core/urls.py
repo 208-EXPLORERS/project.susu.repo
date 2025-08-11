@@ -8,13 +8,13 @@ from django.contrib.auth.views import LogoutView
 
 
 urlpatterns = [
-    path('', views.dashboard, name='dashboard'),
+    path('admin/', views.dashboard, name='dashboard'),
     path('officer/add_transaction/', AddTransactionView.as_view(), name='add_transaction'),
     # Home/dashboard after login
     path('officer/customers/', views.officer_customers, name='officer_customers'),
     path('officer/add_customer/', views.add_customer, name='add_customer'),
     path('officer/customer/<int:customer_id>/transactions/', views.customer_transactions, name='customer_transactions'),
-    path('officer/submit_daily_total/', views.submit_daily_total, name='submit_daily_total'),
+    #path('officer/submit_daily_total/', views.submit_daily_total, name='submit_daily_total'),
     path('admin/review_submissions/', views.review_daily_submissions, name='review_submissions'),
     path('admin/approve_submission/<int:submission_id>/', views.approve_submission, name='approve_submission'),
     #path('admin/', admin.site.urls),  # This must be present
@@ -41,11 +41,12 @@ urlpatterns = [
     
     # NEW: Enhanced loan management
     path('admin/disburse_loan/<int:loan_id>/', views.disburse_loan, name='disburse_loan'),
-    path('officer/loan/<int:loan_id>/repayment/', views.add_loan_repayment, name='add_loan_repayment'),
-    path('customer/<int:customer_id>/', views.customer_detail, name='customer_detail'),
+    #path('officer/loan/<int:loan_id>/repayment/', views.add_loan_repayment, name='add_loan_repayment'),
+    #path('customer/<str:customer_id>/', views.customer_detail, name='customer_detail'),
     path('submit-daily-total/', views.submit_daily_total, name='submit_daily_total'),
-    
+    path('officer/customer/<int:customer_id>/edit/', views.edit_customer, name='edit_customer'),
+    path('customer/<int:customer_id>/', views.customer_detail, name='customer_detail'),
     # Keep admin at the end
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
 ]
 

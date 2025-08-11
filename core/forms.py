@@ -2,6 +2,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from core.models import Customer, Transaction, DailySubmission, Contribution, Loan, CollectionOfficer, LoanRepayment
 from django.utils import timezone
+from .utils import get_business_day
+from datetime import timedelta
 
 
 class CustomerForm(forms.ModelForm):
@@ -122,6 +124,8 @@ class DailySubmissionForm(forms.ModelForm):
         }
 
 
+from django.utils import timezone
+
 class ContributionForm(forms.ModelForm):
     class Meta:
         model = Contribution
@@ -140,15 +144,35 @@ class ContributionForm(forms.ModelForm):
                 'placeholder': 'Optional notes...'
             }),
         }
-
+    
+    def __init__(self, *args, **kwargs):
+        self.customer = kwargs.pop('customer', None)  # Pass customer from view
+        super().__init__(*args, **kwargs)
+    
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
         if amount and amount <= 0:
             raise ValidationError("Contribution amount must be greater than zero.")
-        if amount and amount > 10000:  # Set reasonable limit
+        if amount and amount > 10000:
             raise ValidationError("Contribution amount seems too high. Please verify.")
         return amount
-
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.customer:
+            business_day = get_business_day()
+            business_day_start = timezone.make_aware(
+                timezone.datetime.combine(business_day, timezone.datetime.min.time())
+            ) + timedelta(hours=6)
+            business_day_end = business_day_start + timedelta(hours=24)
+            
+            if Contribution.objects.filter(
+                customer=self.customer, 
+                date__range=[business_day_start, business_day_end]
+            ).exists():
+                raise ValidationError(f"{self.customer.name} has already contributed today (business day).")
+        return cleaned_data
+    
 
 class LoanForm(forms.ModelForm):
     class Meta:

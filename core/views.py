@@ -4,7 +4,7 @@ from .models import CollectionOfficer, Customer, Transaction, DailySubmission, C
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView
-from .forms import CustomerForm, TransactionForm, ContributionForm, LoanForm
+from .forms import CustomerForm, TransactionForm, ContributionForm, LoanForm,LoanRepaymentForm
 from django.urls import reverse_lazy 
 from django.utils import timezone
 from django.db.models import Q, Sum
@@ -18,48 +18,10 @@ from django import forms
 from .models import Notification
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
+from datetime import timedelta
+from .utils import get_business_day
 
 
-@login_required
-def dashboard(request):
-    user = request.user
-
-    if user.is_superuser:
-        # Super admin dashboard
-        total_officers = CollectionOfficer.objects.count()
-        total_customers = Customer.objects.count()
-        total_transactions = Transaction.objects.count()
-        total_submissions = DailySubmission.objects.count()
-
-        context = {
-            'user': user,
-            'role': 'Super Admin',
-            'total_officers': total_officers,
-            'total_customers': total_customers,
-            'total_transactions': total_transactions,
-            'total_submissions': total_submissions,
-        }
-        return render(request, 'core/super_dashboard.html', context)
-
-    else:
-        try:
-            officer = CollectionOfficer.objects.get(user=user)
-        except CollectionOfficer.DoesNotExist:
-            messages.error(request, "Officer profile not found.")
-            return redirect('logout')
-
-        my_customers = Customer.objects.filter(officer=officer)
-        my_transactions = Transaction.objects.filter(customer__in=my_customers)
-        my_submissions = DailySubmission.objects.filter(officer=officer)
-
-        context = {
-            'user': user,
-            'role': 'Collection Officer',
-            'customer_count': my_customers.count(),
-            'transaction_count': my_transactions.count(),
-            'submissions': my_submissions.order_by('-date')[:5],
-        }
-        return render(request, 'core/officer_dashboard.html', context)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -215,7 +177,6 @@ def customer_transactions(request, customer_id):
         'contributions': contributions,
     })
 
-
 @login_required
 def submit_daily_total(request):
     try:
@@ -224,34 +185,40 @@ def submit_daily_total(request):
         messages.error(request, "Officer profile not found.")
         return redirect('login')
     
-    today = timezone.now().date()
-
-    if DailySubmission.objects.filter(officer=officer, date=today).exists():
-        return render(request, 'core/already_submitted.html', {'date': today})
-
-    # Auto calculate total from today's contributions
-    # Get contributions for customers assigned to this officer
+    # Use business day for consistency
+    business_day = get_business_day()
+    
+    if DailySubmission.objects.filter(officer=officer, date=business_day).exists():
+        return render(request, 'core/already_submitted.html', {'date': business_day})
+    
+    # Auto calculate total from today's contributions (6 AM - 6 AM cycle)
     officer_customers = Customer.objects.filter(officer=officer)
+    
+    business_day_start = timezone.make_aware(
+        timezone.datetime.combine(business_day, timezone.datetime.min.time())
+    ) + timedelta(hours=6)  # Start at 6 AM
+    business_day_end = business_day_start + timedelta(hours=24)  # End at 6 AM next day
+    
     contributions = Contribution.objects.filter(
         customer__in=officer_customers,
-        date=today
+        date__range=[business_day_start, business_day_end]
     )
     auto_total = contributions.aggregate(total=Sum('amount'))['total'] or 0
-
+    
     if request.method == 'POST':
         submission = DailySubmission.objects.create(
             officer=officer,
-            total_amount=auto_total
+            total_amount=auto_total,
+            date=business_day  # Use business day instead of today
         )
         messages.success(request, "Daily total submitted successfully.")
         return redirect('officer_dashboard')
-
+    
     return render(request, 'core/submit_daily_total.html', {
         'auto_total': auto_total,
-        'date': today,
+        'date': business_day,
         'contributions': contributions,
     })
-
 
 @user_passes_test(lambda u: u.is_superuser)
 def review_daily_submissions(request):
@@ -294,10 +261,16 @@ def officer_dashboard(request):
 
     total_customers = customers.count()
 
-    today = timezone.now().date()
+    # Use business day logic (6 AM - 6 AM cycle)
+    business_day = get_business_day()
+    business_day_start = timezone.make_aware(
+        timezone.datetime.combine(business_day, timezone.datetime.min.time())
+    ) + timedelta(hours=6)  # Start at 6 AM
+    business_day_end = business_day_start + timedelta(hours=24)  # End at 6 AM next day
+    
     today_contributions = Contribution.objects.filter(
-        customer__in=customers, 
-        date=today
+        customer__in=customers,
+        date__range=[business_day_start, business_day_end]
     )
     total_today_collections = today_contributions.aggregate(
         total=Sum('amount')
@@ -307,6 +280,12 @@ def officer_dashboard(request):
     pending_loans_count = Loan.objects.filter(
         customer__in=customers, 
         status='pending'
+    ).count()
+
+    # Get approved loans count
+    approved_loans_count = Loan.objects.filter(
+        customer__in=customers, 
+        status='approved'
     ).count()
 
     # Add savings data to customers for display
@@ -323,6 +302,7 @@ def officer_dashboard(request):
         'total_customers': total_customers,
         'total_today_collections': total_today_collections,
         'pending_loans': pending_loans_count,
+        'approved_loans': approved_loans_count,
         'query': query or '',
         'status_filter': status_filter or '',
     }
@@ -331,45 +311,43 @@ def officer_dashboard(request):
 
 @officer_required
 def add_contribution(request, customer_id):
-    try:
-        officer = CollectionOfficer.objects.get(user=request.user)
-        customer = get_object_or_404(Customer, id=customer_id, officer=officer)
-    except CollectionOfficer.DoesNotExist:
-        messages.error(request, "Officer profile not found.")
-        return redirect('login')
-
-    # Prevent duplicate entries per day
-    today = timezone.now().date()
-    if Contribution.objects.filter(customer=customer, date=today).exists():
-        messages.warning(request, f"{customer.name} has already contributed today.")
+    officer = request.user.collectionofficer
+    customer = get_object_or_404(Customer, id=customer_id, officer=officer)
+    
+    # Use business day instead of calendar day
+    business_day = get_business_day()
+    
+    # Check contributions for this business day (6 AM to 6 AM cycle)
+    business_day_start = timezone.make_aware(
+        timezone.datetime.combine(business_day, timezone.datetime.min.time())
+    ) + timedelta(hours=6)  # Start at 6 AM
+    
+    business_day_end = business_day_start + timedelta(hours=24)  # End at 6 AM next day
+    
+    if Contribution.objects.filter(
+        customer=customer, 
+        date__range=[business_day_start, business_day_end]
+    ).exists():
+        messages.warning(request, f"{customer.name} has already contributed today (business day).")
         return redirect('officer_customers')
-
+    
     if request.method == 'POST':
-        form = ContributionForm(request.POST)
+        form = ContributionForm(request.POST, customer=customer)
         if form.is_valid():
-            amount = form.cleaned_data['amount']
-            
-            if amount <= 0:
-                messages.error(request, "Amount must be greater than zero.")
-                return redirect('add_contribution', customer_id=customer.id)
-
             contribution = form.save(commit=False)
             contribution.customer = customer
-            # Assuming recorded_by field expects User instance
             contribution.recorded_by = request.user
-            contribution.date = today
             contribution.save()
-
-            messages.success(request, f"Contribution of GHS {amount} recorded for {customer.name}.")
+            
+            messages.success(request, f"Recorded GHS {contribution.amount} for {customer.name}.")
             return redirect('officer_dashboard')
-        else:
-            messages.error(request, "Please correct the form errors.")
-
     else:
-        form = ContributionForm()
-
-    return render(request, 'core/add_contribution.html', {'form': form, 'customer': customer})
-
+        form = ContributionForm(customer=customer)
+    
+    return render(request, 'core/add_contribution.html', {
+        'form': form,
+        'customer': customer
+    })
 
 @login_required
 def apply_loan(request, customer_id):

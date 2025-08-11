@@ -70,15 +70,16 @@ class Customer(models.Model):
         )['total'] or 0
 
     def last_contribution_date(self):
-        """Get the date of last contribution"""
+        """Get the datetime of last contribution"""
         last_contribution = self.contributions.order_by('-date').first()
         return last_contribution.date if last_contribution else None
 
     def days_since_last_contribution(self):
         """Calculate days since last contribution"""
-        last_date = self.last_contribution_date()
-        if last_date:
-            return (timezone.now().date() - last_date).days
+        last_datetime = self.last_contribution_date()
+        if last_datetime:
+           # Convert both to date objects for proper comparison
+           return (timezone.now().date() - last_datetime.date()).days
         return None
 
     def update_status(self):
@@ -146,21 +147,19 @@ class DailySubmission(models.Model):
 class Contribution(models.Model):
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='contributions')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField(default=timezone.now)
+    date = models.DateTimeField(auto_now_add=True)
     recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     approved = models.BooleanField(default=False)
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    
     class Meta:
-        unique_together = ('customer', 'date')  # Prevent double entries per day
+        # REMOVED: unique_together won't work properly with DateTimeField
         app_label = 'core'
         ordering = ['-date']
-
+    
     def __str__(self):
         return f"{self.customer.name} - {self.amount} on {self.date}"
-
-
 class Loan(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
