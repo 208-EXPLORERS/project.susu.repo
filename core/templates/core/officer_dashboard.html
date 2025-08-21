@@ -112,10 +112,10 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Search and Filter -->
-                    <form method="GET" class="mb-3">
+                    <!-- Search, Filter, and Sort -->
+                    <form method="GET" class="mb-3" id="filterForm">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="input-group">
                                     <input type="text" class="form-control" name="q" placeholder="Search customers..." value="{{ query }}">
                                     <div class="input-group-append">
@@ -125,15 +125,44 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <select name="status" class="form-control" onchange="this.form.submit()">
                                     <option value="">All Status</option>
                                     <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
                                     <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
                                 </select>
                             </div>
+                            <div class="col-md-3">
+                                <select name="sort" class="form-control" onchange="this.form.submit()">
+                                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Sort by Name</option>
+                                    <option value="customer_id" {% if sort_by == 'customer_id' %}selected{% endif %}>Sort by ID</option>
+                                    <option value="date_joined" {% if sort_by == 'date_joined' %}selected{% endif %}>Sort by Date Joined</option>
+                                    <option value="total_savings" {% if sort_by == 'total_savings' %}selected{% endif %}>Sort by Total Savings</option>
+                                    <option value="last_contribution" {% if sort_by == 'last_contribution' %}selected{% endif %}>Sort by Last Contribution</option>
+                                </select>
+                            </div>
                             <div class="col-md-2">
-                                <a href="{% url 'officer_dashboard' %}" class="btn btn-secondary btn-block">Clear</a>
+                                <div class="btn-group btn-group-sm w-100">
+                                    <button type="button" class="btn btn-outline-secondary {% if order == 'asc' %}active{% endif %}" onclick="setSortOrder('asc')" title="Ascending">
+                                        <i class="fas fa-sort-amount-up"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary {% if order == 'desc' %}active{% endif %}" onclick="setSortOrder('desc')" title="Descending">
+                                        <i class="fas fa-sort-amount-down"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="order" value="{{ order }}" id="orderInput">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <a href="{% url 'officer_dashboard' %}" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-times"></i> Clear All Filters
+                                </a>
+                                {% if query or status_filter %}
+                                    <span class="badge badge-info ml-2">
+                                        Showing {{ customers|length }} of {{ total_customers }} customers
+                                    </span>
+                                {% endif %}
                             </div>
                         </div>
                     </form>
@@ -144,10 +173,26 @@
                             <table class="table table-hover">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>Customer</th>
+                                        <th>
+                                            Customer
+                                            {% if sort_by == 'name' %}
+                                                <i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} text-primary"></i>
+                                            {% endif %}
+                                        </th>
                                         <th>Contact</th>
-                                        <th>Total Savings</th>
-                                        <th>Last Contribution</th>
+                                        <th>
+                                            Total Savings
+                                            {% if sort_by == 'total_savings' %}
+                                                <i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} text-primary"></i>
+                                            {% endif %}
+                                        </th>
+                                        <th>
+                                            Last Contribution
+                                            {% if sort_by == 'last_contribution' %}
+                                                <i class="fas fa-sort-{% if order == 'asc' %}up{% else %}down{% endif %} text-primary"></i>
+                                            {% endif %}
+                                        </th>
+                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -184,6 +229,13 @@
                                             {% endif %}
                                         </td>
                                         <td>
+                                            {% if customer.status == 'active' %}
+                                                <span class="badge badge-success">Active</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             <div class="btn-group btn-group-sm">
                                                 <a href="{% url 'add_contribution' customer.id %}" class="btn btn-success btn-sm" title="Add Contribution">
                                                     <i class="fas fa-plus"></i>
@@ -204,11 +256,19 @@
                     {% else %}
                         <div class="text-center py-4">
                             <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">No customers found</h5>
-                            <p class="text-muted">Start by adding your first customer</p>
-                            <a href="{% url 'add_customer' %}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Add Customer
-                            </a>
+                            {% if query or status_filter %}
+                                <h5 class="text-muted">No customers found matching your criteria</h5>
+                                <p class="text-muted">Try adjusting your search or filters</p>
+                                <a href="{% url 'officer_dashboard' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </a>
+                            {% else %}
+                                <h5 class="text-muted">No customers found</h5>
+                                <p class="text-muted">Start by adding your first customer</p>
+                                <a href="{% url 'add_customer' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add Customer
+                                </a>
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>
@@ -357,6 +417,12 @@
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
+
+.btn-group .btn.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
 </style>
 {% endblock %}
 
@@ -383,6 +449,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // This would connect to a real-time endpoint to update stats
         console.log('Refreshing dashboard stats...');
     }, 30000);
+});
+
+function setSortOrder(order) {
+    document.getElementById('orderInput').value = order;
+    document.getElementById('filterForm').submit();
+}
+
+// Handle Enter key in search input
+document.querySelector('input[name="q"]').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('filterForm').submit();
+    }
 });
 </script>
 {% endblock %}

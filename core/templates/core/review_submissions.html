@@ -1,32 +1,61 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-  <h2>Review Daily Submissions</h2>
-  <table>
-    <tr>
-      <th>Officer</th>
-      <th>Total</th>
-      <th>Status</th>
-      <th>Action</th>
-    </tr>
-    {% for sub in submissions %}
-    <tr>
-      <td>{{ sub.officer.user.username }}</td>
-      <td>GHS {{ sub.total_amount }}</td>
-      <td>{{ "Approved" if sub.approved else "Pending" }}</td>
-      <td>
-        {% if not sub.approved %}
-        <a href="{% url 'approve_submission' sub.id %}">Approve</a>
-        |
-        <a href="{% url 'export_contributions_pdf' %}" class="btn">📄 Export Contributions (PDF)</a>
-        |
-        <a href="{% url 'export_contributions_csv' %}" class="btn">📥 Export Contributions (CSV)</a>
+<div class="container py-4">
+    <h2 class="mb-4">
+        <i class="fas fa-clipboard-check text-success"></i> Review Daily Submissions
+    </h2>
 
-
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Officer</th>
+                        <th>Total Amount (GHS)</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in submissions %}
+                    <tr>
+                        <td>{{ sub.officer.user.username }}</td>
+                        <td>{{ sub.total_amount }}</td>
+                        <td>
+                            {% if sub.approved %}
+                                <span class="badge bg-success">Approved</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if not sub.approved %}
+                                <a href="{% url 'approve_submission' sub.id %}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-check"></i> Approve
+                                </a>
+                                <a href="{% url 'export_contributions_pdf' %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-file-pdf"></i> PDF
+                                </a>
+                                <a href="{% url 'export_contributions_csv' %}" class="btn btn-sm btn-info text-white">
+                                    <i class="fas fa-file-csv"></i> CSV
+                                </a>
+                            {% else %}
+                                <em class="text-muted">No actions</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-3 text-muted">
+                            <i class="fas fa-inbox fa-2x"></i>
+                            <p class="mt-2 mb-0">No submissions found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
-

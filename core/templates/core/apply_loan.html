@@ -3,21 +3,11 @@
 {% block content %}
 <div class="container py-3">
   <h3 class="mb-3">💳 Apply for Loan: {{ customer.name }}</h3>
-  <form method="post">
-    {% csrf_token %}
-    
-    <div class="mb-3">
-      <label class="form-label">Loan Amount</label>
-      <input type="number" name="amount" class="form-control" step="0.01" required>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Notes (optional)</label>
-      <textarea name="notes" class="form-control" rows="3"></textarea>
-    </div>
-
-    <button type="submit" class="btn btn-warning w-100">Submit Loan Request</button>
-  </form>
+ <form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-warning w-100">Submit Loan Request</button>
+</form>
 </div>
 {% endblock %}
 

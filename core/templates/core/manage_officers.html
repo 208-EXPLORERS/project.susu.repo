@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Manage Collection Officers{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Collection Officers</h2>
+        <a href="{% url 'add_collection_officer' %}" class="btn btn-success">Add New Officer</a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Community</th>
+                            <th>Customers</th>
+                            <th>Total Collections</th>
+                            <th>Date Added</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for officer in officers %}
+                        <tr>
+                            <td>{{ officer.user.get_full_name }}</td>
+                            <td>{{ officer.user.username }}</td>
+                            <td>{{ officer.user.email }}</td>
+                            <td>{{ officer.community.name }}</td>
+                            <td>{{ officer.customer_count }}</td>
+                            <td>GHS {{ officer.total_collections|floatformat:2 }}</td>
+                            <td>{{ officer.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'edit_collection_officer' officer.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                <a href="{% url 'delete_collection_officer' officer.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No collection officers found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

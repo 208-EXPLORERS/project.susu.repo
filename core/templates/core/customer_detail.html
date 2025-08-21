@@ -324,9 +324,9 @@
                             {% if loans %}
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="mb-0">Loan History</h5>
-                                    <button class="btn btn-warning btn-sm">
+                                    <a href="{% url 'apply_loan' customer.id %}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-plus"></i> New Loan Application
-                                    </button>
+                                    </a>
                                 </div>
                                 <div class="row">
                                     {% for loan in loans %}
@@ -384,9 +384,9 @@
                                     <i class="fas fa-handshake"></i>
                                     <h4>No Loans Yet</h4>
                                     <p>This customer hasn't applied for any loans yet.</p>
-                                    <button class="btn btn-warning">
+                                    <a href="{% url 'apply_loan' customer.id %}" class="btn btn-warning">
                                         <i class="fas fa-plus"></i> Create Loan Application
-                                    </button>
+                                    </a>
                                 </div>
                             {% endif %}
                         </div>
@@ -473,16 +473,12 @@
                     <span>&times;</span>
                 </button>
             </div>
-            <form method="post" action="{% comment %}{% url 'add_contribution' customer.customer_id %}{% endcomment %}">
+            <form method="post" action="{% url 'add_contribution' customer.id %}">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="amount">Amount (₵)</label>
                         <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="date">Date</label>
-                        <input type="date" class="form-control" id="date" name="date" value="{% now 'Y-m-d' %}" required>
                     </div>
                     <div class="form-group">
                         <label for="notes">Notes (Optional)</label>
@@ -508,7 +504,7 @@
                     <span>&times;</span>
                 </button>
             </div>
-            <form method="post" action="{% comment %}{% url 'edit_customer' customer.customer_id %}{% endcomment %}" enctype="multipart/form-data">
+            <form method="post" action="{% url 'edit_customer' customer.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="row">
@@ -631,7 +627,7 @@ $(document).ready(function() {
 // Custom event listener for loan status changes
 document.addEventListener('loanStatusChanged', function(e) {
     const { loanData, previousStatus } = e.detail;
-    console.log(`Customer ${{ customer_id }} loan status changed: ${previousStatus} → ${loanData.status}`);
+    console.log(`Customer {{ customer.id }} loan status changed: ${previousStatus} → ${loanData.status}`);
     
     // You could update customer stats here if needed
     // updateCustomerStats();

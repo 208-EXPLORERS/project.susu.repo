@@ -126,8 +126,7 @@
                         <a href="{% url 'review_submissions' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-clipboard-check text-success"></i> Review Daily Submissions
                         </a>
-                        <a href="/admin/" class="list-group-item list-group-item-action">
-                            <i class="fas fa-cogs text-info"></i> System Administration
+                        <a href="{% url 'manage_officers' %}" class="btn btn-info me-2">Manage Officers
                         </a>
                         <a href="{% url 'export_contributions_pdf' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-file-export text-secondary"></i> Export Reports
@@ -264,10 +263,14 @@
                                 <p class="text-muted mb-0">Total Transactions</p>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <h4 class="font-weight-bold text-warning">{{ total_submissions }}</h4>
-                            <p class="text-muted mb-0">Daily Submissions</p>
+                        <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Savings</h5>
+                                <h3 class="text-success">GHS {{ total_savings|floatformat:2 }}</h3>
+                            </div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>

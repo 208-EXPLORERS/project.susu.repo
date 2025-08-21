@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-
+from datetime import timedelta
 
 class Community(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -64,10 +64,30 @@ class Customer(models.Model):
         super().save(*args, **kwargs)
 
     def total_savings(self):
-        """Calculate total savings from all contributions"""
-        return self.contributions.aggregate(
-            total=models.Sum('amount')
-        )['total'] or 0
+        """Calculate total savings from contributions in approved daily submissions only"""
+        total = 0
+        
+        # Get all approved daily submissions for this customer's officer
+        approved_submissions = DailySubmission.objects.filter(
+            officer=self.officer, 
+            approved=True
+        )
+        
+        for submission in approved_submissions:
+            # Use business day logic (6 AM - 6 AM cycle) for the submission date
+            business_day_start = timezone.make_aware(
+                timezone.datetime.combine(submission.date, timezone.datetime.min.time())
+            ) + timedelta(hours=6)  # Start at 6 AM
+            business_day_end = business_day_start + timedelta(hours=24)  # End at 6 AM next day
+            
+            # Get contributions for this customer on this approved business day
+            day_contributions = self.contributions.filter(
+                date__range=[business_day_start, business_day_end]
+            ).aggregate(total=models.Sum('amount'))['total'] or 0
+            
+            total += day_contributions
+        
+        return total
 
     def last_contribution_date(self):
         """Get the datetime of last contribution"""

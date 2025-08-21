@@ -1,15 +1,15 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from core.models import Customer, Transaction, DailySubmission, Contribution, Loan, CollectionOfficer, LoanRepayment
+from core.models import Customer, Transaction, DailySubmission, Contribution, Loan, CollectionOfficer, LoanRepayment, Community
 from django.utils import timezone
 from .utils import get_business_day
 from datetime import timedelta
-
+from django.contrib.auth.models import User
 
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
-        fields = ['name', 'address', 'phone']
+        fields = ['name', 'address', 'phone', 'photo']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -26,6 +26,8 @@ class CustomerForm(forms.ModelForm):
                 'placeholder': 'Enter phone number (optional)',
                 'pattern': '[0-9+\-\s()]*'
             }),
+            'photo': forms.ClearableFileInput(attrs={
+                'class': 'form-control-file'}),
         }
         labels = {
             'name': 'Full Name',
@@ -380,3 +382,63 @@ class DateRangeForm(forms.Form):
             raise ValidationError("Start date cannot be after end date.")
         
         return cleaned_data
+    
+class CollectionOfficerForm(forms.ModelForm):
+    # User fields
+    first_name = forms.CharField(max_length=30, required=True)
+    last_name = forms.CharField(max_length=30, required=True)
+    username = forms.CharField(max_length=150, required=True)
+    email = forms.EmailField(required=True)
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
+    confirm_password = forms.CharField(widget=forms.PasswordInput, required=True)
+    
+    class Meta:
+        model = CollectionOfficer
+        fields = ['community']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add CSS classes for styling
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+    
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Username already exists.")
+        return username
+    
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Email already exists.")
+        return email
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        
+        if password and confirm_password and password != confirm_password:
+            raise forms.ValidationError("Passwords don't match.")
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        # Create the user first
+        user = User.objects.create_user(
+            username=self.cleaned_data['username'],
+            email=self.cleaned_data['email'],
+            password=self.cleaned_data['password'],
+            first_name=self.cleaned_data['first_name'],
+            last_name=self.cleaned_data['last_name']
+        )
+        
+        # Create the collection officer
+        officer = super().save(commit=False)
+        officer.user = user
+        
+        if commit:
+            officer.save()
+        
+        return officer

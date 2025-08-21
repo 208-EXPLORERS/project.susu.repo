@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import CollectionOfficer, Customer, Transaction, DailySubmission, Contribution, Loan
+from .models import CollectionOfficer, Customer, Transaction, DailySubmission, Contribution, Loan, Notification, Community
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView
-from .forms import CustomerForm, TransactionForm, ContributionForm, LoanForm,LoanRepaymentForm
+from .forms import CustomerForm, TransactionForm, ContributionForm, LoanForm,LoanRepaymentForm, CollectionOfficerForm
 from django.urls import reverse_lazy 
 from django.utils import timezone
 from django.db.models import Q, Sum
@@ -15,7 +15,6 @@ from .decorators import officer_required
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django import forms
-from .models import Notification
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
 from datetime import timedelta
@@ -78,7 +77,6 @@ class AddTransactionView(CreateView):
             messages.error(self.request, "Officer profile not found.")
             return redirect('login')
 
-
 @login_required
 def officer_customers(request):
     try:
@@ -89,17 +87,89 @@ def officer_customers(request):
 
     customers = Customer.objects.filter(officer=officer)
     
-    # Add contribution data for each customer
-    for customer in customers:
-        customer.total_savings = customer.contributions.aggregate(
-            total=Sum('amount')
-        )['total'] or 0
-        customer.last_contribution_date = customer.contributions.order_by('-date').first()
-        if customer.last_contribution_date:
-            customer.last_contribution_date = customer.last_contribution_date.date
-    
-    return render(request, 'core/officer_customers.html', {'customers': customers})
+    # Get filter parameters
+    query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '')
+    sort_by = request.GET.get('sort', 'name')
 
+    # Apply search filter
+    if query:
+        customers = customers.filter(
+            Q(name__icontains=query) |
+            Q(phone__icontains=query) |
+            Q(customer_id__icontains=query) |
+            Q(address__icontains=query)
+        )
+
+    # Apply status filter
+    if status_filter and status_filter in ['active', 'inactive']:
+        customers = customers.filter(status=status_filter)
+
+    # Get approved daily submissions for this officer
+    approved_submissions = DailySubmission.objects.filter(
+        officer=officer, 
+        approved=True
+    )
+
+    # Add contribution data for each customer before sorting
+    customers_list = list(customers)
+    for customer in customers_list:
+        # Calculate total savings from approved submissions only
+        customer.total_savings = 0
+        
+        for submission in approved_submissions:
+            business_day_start = timezone.make_aware(
+                timezone.datetime.combine(submission.date, timezone.datetime.min.time())
+            ) + timedelta(hours=6)
+            business_day_end = business_day_start + timedelta(hours=24)
+            
+            day_contributions = customer.contributions.filter(
+                date__range=[business_day_start, business_day_end]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            customer.total_savings += day_contributions
+        
+        # Last contribution date (this can remain as is)
+        last_contribution = customer.contributions.order_by('-date').first()
+        customer.last_contribution_date = last_contribution.date if last_contribution else None
+
+    # Apply sorting (rest remains the same)
+    if sort_by == 'name':
+        customers_list.sort(key=lambda x: x.name.lower())
+    elif sort_by == '-name':
+        customers_list.sort(key=lambda x: x.name.lower(), reverse=True)
+    elif sort_by == 'total_savings':
+        customers_list.sort(key=lambda x: x.total_savings or 0)
+    elif sort_by == '-total_savings':
+        customers_list.sort(key=lambda x: x.total_savings or 0, reverse=True)
+    # ... rest of sorting logic
+
+    # Rest of the view remains the same
+    class CustomerList:
+        def __init__(self, items):
+            self.items = items
+        
+        def __iter__(self):
+            return iter(self.items)
+        
+        def __len__(self):
+            return len(self.items)
+        
+        @property
+        def count(self):
+            return len(self.items)
+    
+    customers = CustomerList(customers_list)
+    
+    context = {
+        'customers': customers,
+        'query': query,
+        'status_filter': status_filter,
+        'sort_by': sort_by,
+        'officer': officer,
+    }
+    
+    return render(request, 'core/officer_customers.html', context)
 
 @officer_required
 def add_customer(request):
@@ -110,8 +180,9 @@ def add_customer(request):
         return redirect('login')
 
     if request.method == 'POST':
-        form = CustomerForm(request.POST)
+        form = CustomerForm(request.POST, request.FILES)
         if form.is_valid():
+            form.save()
             name = form.cleaned_data['name']
             address = form.cleaned_data['address']
 
@@ -246,27 +317,41 @@ def officer_dashboard(request):
     
     customers = Customer.objects.filter(officer=officer)
 
-    query = request.GET.get('q')
-    status_filter = request.GET.get('status')
+    # Get filter parameters
+    query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '')
+    sort_by = request.GET.get('sort', 'name')
+    order = request.GET.get('order', 'asc')
 
+    # Apply search and status filters (same as before)
     if query:
         customers = customers.filter(
             Q(name__icontains=query) |
             Q(phone__icontains=query) |
-            Q(customer_id__icontains=query)
+            Q(customer_id__icontains=query) |
+            Q(address__icontains=query)
         )
 
-    if status_filter:
+    if status_filter and status_filter in ['active', 'inactive']:
         customers = customers.filter(status=status_filter)
+
+    # Apply sorting for database fields
+    if sort_by in ['name', 'customer_id', 'date_joined'] and sort_by not in ['total_savings', 'last_contribution']:
+        sort_field = sort_by
+        if order == 'desc':
+            sort_field = f'-{sort_field}'
+        customers = customers.order_by(sort_field)
+    else:
+        customers = customers.order_by('name')
 
     total_customers = customers.count()
 
-    # Use business day logic (6 AM - 6 AM cycle)
+    # Today's collections calculation (same as before)
     business_day = get_business_day()
     business_day_start = timezone.make_aware(
         timezone.datetime.combine(business_day, timezone.datetime.min.time())
-    ) + timedelta(hours=6)  # Start at 6 AM
-    business_day_end = business_day_start + timedelta(hours=24)  # End at 6 AM next day
+    ) + timedelta(hours=6)
+    business_day_end = business_day_start + timedelta(hours=24)
     
     today_contributions = Contribution.objects.filter(
         customer__in=customers,
@@ -276,38 +361,71 @@ def officer_dashboard(request):
         total=Sum('amount')
     )['total'] or 0
 
-    # Get pending loans for this officer's customers
+    # Loan counts (same as before)
     pending_loans_count = Loan.objects.filter(
         customer__in=customers, 
         status='pending'
     ).count()
 
-    # Get approved loans count
     approved_loans_count = Loan.objects.filter(
         customer__in=customers, 
         status='approved'
     ).count()
 
+    # Get approved daily submissions for this officer
+    approved_submissions = DailySubmission.objects.filter(
+        officer=officer, 
+        approved=True
+    )
+
     # Add savings data to customers for display
-    for customer in customers:
-        customer.total_savings = customer.contributions.aggregate(
-            total=Sum('amount')
-        )['total'] or 0
+    customers_list = list(customers)
+    for customer in customers_list:
+        # Calculate total savings from approved submissions only
+        customer.total_savings = 0
+        
+        for submission in approved_submissions:
+            business_day_start = timezone.make_aware(
+                timezone.datetime.combine(submission.date, timezone.datetime.min.time())
+            ) + timedelta(hours=6)
+            business_day_end = business_day_start + timedelta(hours=24)
+            
+            day_contributions = customer.contributions.filter(
+                date__range=[business_day_start, business_day_end]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            customer.total_savings += day_contributions
+        
         last_contribution = customer.contributions.order_by('-date').first()
         customer.last_contribution_date = last_contribution.date if last_contribution else None
 
+    # Handle sorting for calculated fields
+    if sort_by == 'total_savings':
+        customers_list.sort(
+            key=lambda x: x.total_savings or 0, 
+            reverse=(order == 'desc')
+        )
+    elif sort_by == 'last_contribution':
+        customers_list.sort(
+            key=lambda x: x.last_contribution_date or timezone.now().date() - timedelta(days=9999), 
+            reverse=(order == 'desc')
+        )
+
     context = {
         'officer': officer,
-        'customers': customers,
+        'customers': customers_list,
         'total_customers': total_customers,
         'total_today_collections': total_today_collections,
         'pending_loans': pending_loans_count,
         'approved_loans': approved_loans_count,
-        'query': query or '',
-        'status_filter': status_filter or '',
+        'query': query,
+        'status_filter': status_filter,
+        'sort_by': sort_by,
+        'order': order,
+        'recent_notifications': getattr(request.user, 'notifications', None).order_by('-created_at')[:5] if hasattr(request.user, 'notifications') else [],
+        'unread_notifications': getattr(request.user, 'notifications', None).filter(is_read=False).count() if hasattr(request.user, 'notifications') else 0,
     }
     return render(request, 'core/officer_dashboard.html', context)
-
 
 @officer_required
 def add_contribution(request, customer_id):
@@ -520,7 +638,26 @@ def customer_detail(request, customer_id):
         return redirect('login')
     
     contributions = customer.contributions.all().order_by('-date')
-    total_savings = contributions.aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Calculate total savings from approved submissions only
+    total_savings = 0
+    approved_submissions = DailySubmission.objects.filter(
+        officer=officer, 
+        approved=True
+    )
+    
+    for submission in approved_submissions:
+        business_day_start = timezone.make_aware(
+            timezone.datetime.combine(submission.date, timezone.datetime.min.time())
+        ) + timedelta(hours=6)
+        business_day_end = business_day_start + timedelta(hours=24)
+        
+        day_contributions = customer.contributions.filter(
+            date__range=[business_day_start, business_day_end]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        total_savings += day_contributions
+    
     loans = customer.loans.all().order_by('-date_applied')
     
     return render(request, 'core/customer_detail.html', {
@@ -529,7 +666,6 @@ def customer_detail(request, customer_id):
         'total_savings': total_savings,
         'loans': loans,
     })
-
 
 # Edit customer view
 @officer_required
@@ -716,6 +852,28 @@ def dashboard(request):
         total_submissions = DailySubmission.objects.count()
         pending_loans = Loan.objects.filter(status='pending').count()
         
+        # Calculate total savings from approved daily submissions only
+        total_savings = 0
+        approved_submissions = DailySubmission.objects.filter(approved=True)
+        
+        for submission in approved_submissions:
+            # Get all customers under this officer
+            officer_customers = Customer.objects.filter(officer=submission.officer)
+            
+            # Use business day logic (6 AM - 6 AM cycle) for the submission date
+            business_day_start = timezone.make_aware(
+                timezone.datetime.combine(submission.date, timezone.datetime.min.time())
+            ) + timedelta(hours=6)  # Start at 6 AM
+            business_day_end = business_day_start + timedelta(hours=24)  # End at 6 AM next day
+            
+            # Get all contributions for this officer's customers on this business day
+            day_contributions = Contribution.objects.filter(
+                customer__in=officer_customers,
+                date__range=[business_day_start, business_day_end]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            total_savings += day_contributions
+        
         # Recent notifications
         recent_notifications = user.notifications.order_by('-created_at')[:5]
         unread_notifications = user.notifications.filter(is_read=False).count()
@@ -728,40 +886,12 @@ def dashboard(request):
             'total_transactions': total_transactions,
             'total_submissions': total_submissions,
             'pending_loans': pending_loans,
+            'total_savings': total_savings,
             'recent_notifications': recent_notifications,
             'unread_notifications': unread_notifications,
         }
         return render(request, 'core/super_dashboard.html', context)
-
-    else:
-        try:
-            officer = CollectionOfficer.objects.get(user=user)
-        except CollectionOfficer.DoesNotExist:
-            messages.error(request, "Officer profile not found.")
-            return redirect('logout')
-
-        my_customers = Customer.objects.filter(officer=officer)
-        my_transactions = Transaction.objects.filter(customer__in=my_customers)
-        my_submissions = DailySubmission.objects.filter(officer=officer)
-        my_loans = Loan.objects.filter(customer__in=my_customers)
-        
-        # Recent notifications
-        recent_notifications = user.notifications.order_by('-created_at')[:5]
-        unread_notifications = user.notifications.filter(is_read=False).count()
-
-        context = {
-            'user': user,
-            'role': 'Collection Officer',
-            'customer_count': my_customers.count(),
-            'transaction_count': my_transactions.count(),
-            'submissions': my_submissions.order_by('-date')[:5],
-            'pending_loans': my_loans.filter(status='pending').count(),
-            'approved_loans': my_loans.filter(status='approved').count(),
-            'recent_notifications': recent_notifications,
-            'unread_notifications': unread_notifications,
-        }
-        return render(request, 'core/officer_dashboard.html', context)
-
+    
 # NEW: Loan disbursement management
 @user_passes_test(lambda u: u.is_superuser)
 def disburse_loan(request, loan_id):
@@ -822,6 +952,121 @@ def add_loan_repayment(request, loan_id):
         'loan': loan,
         'customer': loan.customer
     })
+
+@user_passes_test(lambda u: u.is_superuser)
+def add_collection_officer(request):
+    if request.method == 'POST':
+        form = CollectionOfficerForm(request.POST)
+        if form.is_valid():
+            officer = form.save()
+            messages.success(request, f"Collection Officer '{officer.user.get_full_name()}' added successfully.")
+            return redirect('manage_officers')
+    else:
+        form = CollectionOfficerForm()
+    
+    return render(request, 'core/add_collection_officer.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_superuser)
+def manage_officers(request):
+    officers = CollectionOfficer.objects.all().select_related('user', 'community').order_by('-created_at')
+    
+    # Add statistics for each officer
+    for officer in officers:
+        officer.customer_count = Customer.objects.filter(officer=officer).count()
+        officer.total_collections = 0
+        
+        # Calculate total from approved submissions
+        approved_submissions = DailySubmission.objects.filter(
+            officer=officer, 
+            approved=True
+        )
+        
+        for submission in approved_submissions:
+            officer_customers = Customer.objects.filter(officer=officer)
+            business_day_start = timezone.make_aware(
+                timezone.datetime.combine(submission.date, timezone.datetime.min.time())
+            ) + timedelta(hours=6)
+            business_day_end = business_day_start + timedelta(hours=24)
+            
+            day_contributions = Contribution.objects.filter(
+                customer__in=officer_customers,
+                date__range=[business_day_start, business_day_end]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            officer.total_collections += day_contributions
+    
+    return render(request, 'core/manage_officers.html', {'officers': officers})
+
+@user_passes_test(lambda u: u.is_superuser)
+def edit_collection_officer(request, officer_id):
+    officer = get_object_or_404(CollectionOfficer, id=officer_id)
+    
+    if request.method == 'POST':
+        # Update user information
+        user = officer.user
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        
+        # Update password if provided
+        new_password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if new_password:
+            if new_password != confirm_password:
+                messages.error(request, "Passwords do not match.")
+                communities = Community.objects.all()
+                return render(request, 'core/edit_collection_officer.html', {
+                    'officer': officer,
+                    'communities': communities
+                })
+            
+            if len(new_password) < 8:
+                messages.error(request, "Password must be at least 8 characters long.")
+                communities = Community.objects.all()
+                return render(request, 'core/edit_collection_officer.html', {
+                    'officer': officer,
+                    'communities': communities
+                })
+            
+            user.set_password(new_password)
+        
+        user.save()
+        
+        # Update officer information
+        community_id = request.POST.get('community')
+        if community_id:
+            try:
+                officer.community = Community.objects.get(id=community_id)
+                officer.save()
+            except Community.DoesNotExist:
+                messages.error(request, "Invalid community selected.")
+                communities = Community.objects.all()
+                return render(request, 'core/edit_collection_officer.html', {
+                    'officer': officer,
+                    'communities': communities
+                })
+        
+        messages.success(request, f"Officer '{user.get_full_name()}' updated successfully.")
+        return redirect('manage_officers')
+    
+    communities = Community.objects.all()
+    return render(request, 'core/edit_collection_officer.html', {
+        'officer': officer,
+        'communities': communities
+    })
+
+@user_passes_test(lambda u: u.is_superuser)
+def delete_collection_officer(request, officer_id):
+    officer = get_object_or_404(CollectionOfficer, id=officer_id)
+    
+    if request.method == 'POST':
+        officer_name = officer.user.get_full_name()
+        officer.user.delete()  # This will cascade delete the officer too
+        messages.success(request, f"Officer '{officer_name}' deleted successfully.")
+        return redirect('manage_officers')
+    
+    return render(request, 'core/delete_officer_confirm.html', {'officer': officer})
 
 
 

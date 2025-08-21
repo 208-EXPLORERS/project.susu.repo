@@ -3,6 +3,8 @@ from . import views
 from django.contrib import admin
 from .views import AddTransactionView,custom_login_view
 from django.contrib.auth.views import LogoutView
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 
@@ -48,5 +50,10 @@ urlpatterns = [
     path('customer/<int:customer_id>/', views.customer_detail, name='customer_detail'),
     # Keep admin at the end
     #path('admin/', admin.site.urls),
-]
+    path('admin/officers/', views.manage_officers, name='manage_officers'),
+    path('admin/officers/add/', views.add_collection_officer, name='add_collection_officer'),
+    path('admin/officers/edit/<int:officer_id>/', views.edit_collection_officer, name='edit_collection_officer'),
+    path('admin/officers/delete/<int:officer_id>/', views.delete_collection_officer, name='delete_collection_officer'),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
