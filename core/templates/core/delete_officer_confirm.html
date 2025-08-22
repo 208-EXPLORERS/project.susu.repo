@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Delete Collection Officer{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Confirm Delete Officer</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Warning!</strong> This action cannot be undone.
+                    </div>
+                    
+                    <p>Are you sure you want to delete the following collection officer?</p>
+                    
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5>{{ officer.user.get_full_name }}</h5>
+                            <p class="mb-1"><strong>Username:</strong> {{ officer.user.username }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ officer.user.email }}</p>
+                            <p class="mb-1"><strong>Community:</strong> {{ officer.community.name }}</p>
+                            <p class="mb-0"><strong>Total Customers:</strong> {{ officer.customers.count }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if officer.customers.count > 0 %}
+                    <div class="alert alert-danger mt-3">
+                        <strong>Note:</strong> This officer has {{ officer.customers.count }} customer(s). 
+                        You may want to reassign these customers to another officer before deletion.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'manage_officers' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger">
+                                Yes, Delete Officer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

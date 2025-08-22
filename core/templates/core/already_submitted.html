@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+  <p>You already submitted today’s total on {{ date }}. Awaiting approval.</p>
+  <a href="{% url 'officer_dashboard' %}">← Back to Dashboard</a>
+{% endblock %}
+

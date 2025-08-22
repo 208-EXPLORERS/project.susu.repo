@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} Integrity Capital Investments {% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        /* Notification badge styles */
+        .notification-badge {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        /* Real-time status update animations */
+        .status-updated {
+            animation: statusPulse 1s ease-in-out;
+        }
+        
+        @keyframes statusPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); box-shadow: 0 0 10px rgba(0,123,255,0.5); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Loan status badges */
+        .loan-status-badge {
+            transition: all 0.3s ease;
+        }
+        
+        /* Real-time indicator */
+        .real-time-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 5px;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        /* Toast notifications */
+        .loan-status-toast {
+            min-width: 300px;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        
+        /* Loading spinner for AJAX */
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="fas fa-piggy-bank"></i> Susu System
+            </a>
+            
+            <div class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                    <!-- Notifications Bell -->
+                    <div class="nav-item dropdown position-relative">
+                        <a class="nav-link" href="#" id="notificationDropdown" role="button" data-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" id="notification-count" style="display: none;">0</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" style="min-width: 300px;">
+                            <h6 class="dropdown-header">Recent Notifications</h6>
+                            <div id="notification-preview">
+                                <div class="dropdown-item text-center text-muted">
+                                    <div class="loading-spinner mx-auto"></div>
+                                    Loading...
+                                </div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-center" href="{% url 'notifications_list' %}">
+                                View All Notifications
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- User Menu -->
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                            {% if not user.is_superuser %}
+                                <a class="dropdown-item" href="{% url 'officer_customers' %}">
+                                    <i class="fas fa-users"></i> My Customers
+                                </a>
+                            {% endif %}
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="py-4">
+        <!-- Messages -->
+        {% if messages %}
+            <div class="container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <small class="text-muted">
+                &copy; 2024 Susu System | 
+                <span class="real-time-indicator"></span>
+                Real-time Updates Active
+            </small>
+        </div>
+    </footer>
+
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container"></div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+
+    <!-- CSRF Token for AJAX -->
+    <script>
+        // Get CSRF token for AJAX requests
+        function getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        // Set up AJAX defaults
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", getCSRFToken());
+                }
+            }
+        });
+    </script>
+
+    <!-- Real-time Loan Status Monitor -->
+    <script>
+        class LoanStatusMonitor {
+            constructor() {
+                this.loanElements = document.querySelectorAll('[data-loan-id]');
+                this.intervalId = null;
+                this.updateInterval = 3000; // 3 seconds as required by R7
+                this.init();
+            }
+
+            init() {
+                if (this.loanElements.length > 0) {
+                    this.startMonitoring();
+                    console.log(`Started monitoring ${this.loanElements.length} loans`);
+                }
+                
+                // Stop monitoring when page is hidden
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        this.stopMonitoring();
+                    } else if (this.loanElements.length > 0) {
+                        this.startMonitoring();
+                    }
+                });
+            }
+
+            startMonitoring() {
+                if (this.intervalId) {
+                    return; // Already monitoring
+                }
+                
+                this.intervalId = setInterval(() => {
+                    this.checkAllLoanStatuses();
+                }, this.updateInterval);
+            }
+
+            stopMonitoring() {
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
+            }
+
+            async checkAllLoanStatuses() {
+                const promises = Array.from(this.loanElements).map(element => {
+                    const loanId = element.getAttribute('data-loan-id');
+                    return this.checkLoanStatus(loanId, element);
+                });
+
+                try {
+                    await Promise.all(promises);
+                } catch (error) {
+                    console.error('Error checking loan statuses:', error);
+                }
+            }
+
+            async checkLoanStatus(loanId, element) {
+                try {
+                    const response = await fetch(`/api/loan/${loanId}/status/`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    this.updateLoanElement(element, data);
+                    
+                } catch (error) {
+                    console.error(`Error checking loan ${loanId}:`, error);
+                }
+            }
+
+            updateLoanElement(element, loanData) {
+                const statusBadge = element.querySelector('.loan-status-badge');
+                const statusText = element.querySelector('.loan-status-text');
+                const lastUpdated = element.querySelector('.last-updated');
+                const approvalInfo = element.querySelector('.approval-info');
+                
+                // Update status badge color and text
+                if (statusBadge) {
+                    statusBadge.className = 'loan-status-badge badge ' + this.getStatusBadgeClass(loanData.status);
+                    statusBadge.textContent = loanData.status_display;
+                    
+                    // Add animation to indicate change
+                    statusBadge.classList.add('status-updated');
+                    setTimeout(() => statusBadge.classList.remove('status-updated'), 1000);
+                }
+                
+                // Update status text
+                if (statusText) {
+                    statusText.textContent = loanData.status_display;
+                }
+                
+                // Update last updated timestamp
+                if (lastUpdated) {
+                    const timestampSpan = lastUpdated.querySelector(`#timestamp-${loanData.loan_id}`) || 
+                                         lastUpdated.querySelector('span') || 
+                                         lastUpdated;
+                    if (timestampSpan) {
+                        timestampSpan.textContent = loanData.last_updated;
+                    }
+                }
+                
+                // Update approval information
+                if (approvalInfo && (loanData.status === 'approved' || loanData.status === 'rejected')) {
+                    let infoHtml = '';
+                    
+                    if (loanData.status === 'approved') {
+                        infoHtml = `
+                            <small class="text-success">
+                                <i class="fas fa-check-circle"></i>
+                                Approved on ${loanData.date_approved} by ${loanData.approved_by || 'Admin'}
+                            </small>
+                        `;
+                    } else if (loanData.status === 'rejected') {
+                        infoHtml = `
+                            <small class="text-danger">
+                                <i class="fas fa-times-circle"></i>
+                                Rejected: ${loanData.rejection_reason || 'No reason provided'}
+                            </small>
+                        `;
+                    }
+                    
+                    approvalInfo.innerHTML = infoHtml;
+                }
+
+                // Show notification for status changes
+                const currentStatus = element.getAttribute('data-current-status');
+                if (currentStatus && currentStatus !== loanData.status) {
+                    this.showStatusChangeNotification(loanData);
+                    element.setAttribute('data-current-status', loanData.status);
+                } else if (!currentStatus) {
+                    element.setAttribute('data-current-status', loanData.status);
+                }
+            }
+
+            getStatusBadgeClass(status) {
+                const statusClasses = {
+                    'pending': 'badge-warning',
+                    'approved': 'badge-success',
+                    'rejected': 'badge-danger',
+                    'disbursed': 'badge-info',
+                    'repaid': 'badge-secondary',
+                    'defaulted': 'badge-dark'
+                };
+                
+                return statusClasses[status] || 'badge-secondary';
+            }
+
+            showStatusChangeNotification(loanData) {
+                this.createToast('Loan Status Update', `Loan status changed to: ${loanData.status_display}`, 'info');
+            }
+
+            createToast(title, message, type = 'info') {
+                const toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) return;
+
+                const toastId = 'toast-' + Date.now();
+                const toastHtml = `
+                    <div class="toast" id="${toastId}" role="alert" data-autohide="true" data-delay="5000">
+                        <div class="toast-header">
+                            <i class="fas fa-bell text-${type} mr-2"></i>
+                            <strong class="mr-auto">${title}</strong>
+                            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                // Show the toast
+                $(`#${toastId}`).toast('show');
+                
+                // Remove toast element after it's hidden
+                $(`#${toastId}`).on('hidden.bs.toast', function() {
+                    this.remove();
+                });
+            }
+        }
+
+        // Notification Monitor for Navigation Badge
+        class NotificationMonitor {
+            constructor() {
+                this.badgeElement = document.getElementById('notification-count');
+                this.previewElement = document.getElementById('notification-preview');
+                this.init();
+            }
+
+            init() {
+                this.checkUnreadCount();
+                this.startMonitoring();
+                
+                // Load notification preview when dropdown is clicked
+                $('#notificationDropdown').on('click', () => {
+                    this.loadNotificationPreview();
+                });
+            }
+
+            startMonitoring() {
+                setInterval(() => {
+                    this.checkUnreadCount();
+                }, 10000); // Check every 10 seconds
+            }
+
+            async checkUnreadCount() {
+                try {
+                    const response = await fetch('/api/notifications/unread-count/');
+                    const data = await response.json();
+                    
+                    if (this.badgeElement) {
+                        if (data.count > 0) {
+                            this.badgeElement.textContent = data.count;
+                            this.badgeElement.style.display = 'inline';
+                        } else {
+                            this.badgeElement.style.display = 'none';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking notifications:', error);
+                }
+            }
+
+            async loadNotificationPreview() {
+                if (!this.previewElement) return;
+                
+                this.previewElement.innerHTML = `
+                    <div class="dropdown-item text-center text-muted">
+                        <div class="loading-spinner mx-auto"></div>
+                        Loading...
+                    </div>
+                `;
+
+                try {
+                    // This would need a new endpoint to get recent notifications
+                    // For now, just show a simple message
+                    setTimeout(() => {
+                        this.previewElement.innerHTML = `
+                            <div class="dropdown-item text-center text-muted">
+                                <i class="fas fa-bell"></i>
+                                <small>Click "View All" to see notifications</small>
+                            </div>
+                        `;
+                    }, 500);
+                } catch (error) {
+                    console.error('Error loading notification preview:', error);
+                    this.previewElement.innerHTML = `
+                        <div class="dropdown-item text-center text-danger">
+                            <small>Error loading notifications</small>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize monitors
+            window.loanMonitor = new LoanStatusMonitor();
+            window.notificationMonitor = new NotificationMonitor();
+            
+            console.log('Integrity Capital Investments | Susu System real-time monitoring initialized');
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

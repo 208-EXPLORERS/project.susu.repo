@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+  <h2>{{ customer.name }} has already made a contribution today.</h2>
+  <a href="{% url 'officer_dashboard' %}">← Back to Dashboard</a>
+{% endblock %}

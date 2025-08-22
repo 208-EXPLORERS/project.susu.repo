@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Collection Officer{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Edit Collection Officer - {{ officer.user.get_full_name }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ officer.user.first_name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ officer.user.last_name }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           value="{{ officer.user.username }}" readonly>
+                                    <small class="form-text text-muted">Username cannot be changed</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ officer.user.email }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="community" class="form-label">Community</label>
+                            <select class="form-control" id="community" name="community" required>
+                                <option value="">Select Community</option>
+                                {% for community in communities %}
+                                <option value="{{ community.id }}" 
+                                        {% if community.id == officer.community.id %}selected{% endif %}>
+                                    {{ community.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="change_password" 
+                                       onchange="togglePasswordFields()">
+                                <label class="form-check-label" for="change_password">
+                                    Change Password
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="password_fields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">New Password</label>
+                                        <input type="password" class="form-control" id="password" name="password" 
+                                               minlength="8">
+                                        <small class="form-text text-muted">Leave blank to keep current password</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" id="confirm_password" 
+                                               name="confirm_password" minlength="8">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Officer Statistics (Read-only) -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Officer Statistics</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <strong>Total Customers:</strong><br>
+                                        <span class="text-primary">{{ officer.customers.count }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Date Joined:</strong><br>
+                                        <span class="text-muted">{{ officer.created_at|date:"M d, Y" }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Last Login:</strong><br>
+                                        <span class="text-muted">
+                                            {% if officer.user.last_login %}
+                                                {{ officer.user.last_login|date:"M d, Y H:i" }}
+                                            {% else %}
+                                                Never
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'manage_officers' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Officer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePasswordFields() {
+    const checkbox = document.getElementById('change_password');
+    const passwordFields = document.getElementById('password_fields');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    
+    if (checkbox.checked) {
+        passwordFields.style.display = 'block';
+        passwordInput.required = true;
+        confirmPasswordInput.required = true;
+    } else {
+        passwordFields.style.display = 'none';
+        passwordInput.required = false;
+        confirmPasswordInput.required = false;
+        passwordInput.value = '';
+        confirmPasswordInput.value = '';
+    }
+}
+
+// Add password confirmation validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    
+    form.addEventListener('submit', function(e) {
+        const changePasswordCheckbox = document.getElementById('change_password');
+        
+        if (changePasswordCheckbox.checked) {
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+            
+            if (passwordInput.value.length < 8) {
+                e.preventDefault();
+                alert('Password must be at least 8 characters long!');
+                return false;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

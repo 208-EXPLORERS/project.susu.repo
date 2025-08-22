@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+  <h2>Submit Daily Total for {{ date }}</h2>
+  <p>System-calculated total: <strong>GHS {{ auto_total }}</strong></p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Submit Total</button>
+  </form>
+{% endblock %}

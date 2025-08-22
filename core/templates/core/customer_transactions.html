@@ -1,0 +1,8 @@
+<h2>Transaction History for {{ customer.name }}</h2>
+<ul>
+    {% for transaction in transactions %}
+        <li>{{ transaction.date }} - GHS {{ transaction.amount }}</li>
+    {% empty %}
+        <li>No transactions yet.</li>
+    {% endfor %}
+</ul>
