@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Loan Applications{% endblock %}
+
+{% block extra_head %}
+<style>
+    .loan-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #007bff;
+    }
+    .loan-card:hover {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .status-pending { border-left-color: #ffc107; }
+    .status-approved { border-left-color: #28a745; }
+    .status-rejected { border-left-color: #dc3545; }
+    .status-disbursed { border-left-color: #17a2b8; }
+    
+    .notification-badge {
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 12px;
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        min-width: 20px;
+        text-align: center;
+    }
+    
+    .real-time-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #28a745;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        margin-right: 5px;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with real-time indicator -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>
+                        <i class="fas fa-handshake"></i> Review Loan Applications
+                        <small class="text-muted">
+                            <span class="real-time-indicator"></span>
+                            Real-time updates enabled
+                        </small>
+                    </h2>
+                </div>
+                <div class="text-right">
+                    <span class="badge badge-warning badge-lg">
+                        {{ loans|length }} Pending Review{{ loans|length|pluralize }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if loans %}
+        <div class="row">
+            {% for loan in loans %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card loan-card status-{{ loan.status }}" 
+                         data-loan-id="{{ loan.id }}" 
+                         data-current-status="{{ loan.status }}">
+                        
+                        <!-- Card Header -->
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-user"></i>
+                                    {{ loan.customer.name }}
+                                </h6>
+                                <span class="loan-status-badge badge badge-warning">
+                                    {{ loan.get_status_display }}
+                                </span>
+                            </div>
+                            <small class="text-muted">
+                                ID: {{ loan.customer.customer_id }} | 
+                                Officer: {{ loan.customer.officer.user.get_full_name }}
+                            </small>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <!-- Loan Details -->
+                            <div class="mb-3">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Amount:</strong><br>
+                                        <span class="text-primary h5">GHS {{ loan.amount }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Period:</strong><br>
+                                        {{ loan.repayment_period_months }} months
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Purpose -->
+                            <div class="mb-3">
+                                <strong>Purpose:</strong>
+                                <p class="text-muted mb-0">{{ loan.purpose }}</p>
+                            </div>
+
+                            <!-- Customer Info -->
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt"></i> {{ loan.customer.address }}<br>
+                                    <i class="fas fa-phone"></i> {{ loan.customer.phone|default:"No phone" }}<br>
+                                    <i class="fas fa-calendar"></i> Applied: {{ loan.date_applied|date:"M d, Y H:i" }}
+                                </small>
+                            </div>
+
+                            <!-- Customer Savings Info -->
+                            <div class="mb-3">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Total Savings:</small><br>
+                                        <strong>GHS {{ loan.customer.total_savings|default:0 }}</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Status:</small><br>
+                                        <span class="badge badge-{% if loan.customer.status == 'active' %}success{% else %}warning{% endif %}">
+                                            {{ loan.customer.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Approval Information (updated in real-time) -->
+                            <div class="approval-info mb-3">
+                                {% if loan.status == 'approved' %}
+                                    <small class="text-success">
+                                        <i class="fas fa-check-circle"></i>
+                                        Approved on {{ loan.date_approved|date:"M d, Y H:i" }} by {{ loan.approved_by.get_full_name }}
+                                    </small>
+                                {% elif loan.status == 'rejected' %}
+                                    <small class="text-danger">
+                                        <i class="fas fa-times-circle"></i>
+                                        Rejected: {{ loan.rejection_reason|default:"No reason provided" }}
+                                    </small>
+                                {% endif %}
+                            </div>
+
+                            <!-- Last Updated Timestamp -->
+                            <div class="last-updated">
+                                <small class="text-muted">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Last updated: <span id="timestamp-{{ loan.id }}">{{ loan.date_applied|date:"Y-m-d H:i:s" }}</span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer with Actions -->
+                        <div class="card-footer bg-light">
+                            {% if loan.status == 'pending' %}
+                                <div class="btn-group btn-group-sm w-100" role="group">
+                                    <button type="button" 
+                                            class="btn btn-success" 
+                                            onclick="approveLoan({{ loan.id }}, '{{ loan.customer.name }}', {{ loan.amount }})">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-danger" 
+                                            onclick="rejectLoan({{ loan.id }}, '{{ loan.customer.name }}', {{ loan.amount }})">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </div>
+                            {% elif loan.status == 'approved' %}
+                                <div class="btn-group btn-group-sm w-100" role="group">
+                                    <button type="button" 
+                                            class="btn btn-info" 
+                                            onclick="disburseLoan({{ loan.id }}, '{{ loan.customer.name }}', {{ loan.amount }})">
+                                        <i class="fas fa-money-bill-wave"></i> Disburse
+                                    </button>
+                                    <small class="text-muted d-block mt-1">Monthly: GHS {{ loan.monthly_repayment|default:0 }}</small>
+                                </div>
+                            {% else %}
+                                <div class="text-center">
+                                    <span class="loan-status-text badge badge-secondary">{{ loan.get_status_display }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Pending Loan Applications</h4>
+                    <p class="text-muted">All loan applications have been reviewed.</p>
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Loan Approval Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle"></i> Approve Loan
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to approve this loan?</p>
+                <div class="alert alert-info">
+                    <strong id="approve-customer-name"></strong><br>
+                    Amount: <strong>GHS <span id="approve-amount"></span></strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="#" id="confirm-approve" class="btn btn-success">
+                    <i class="fas fa-check"></i> Confirm Approval
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Rejection Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <form method="post" id="reject-form">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-times-circle"></i> Reject Loan
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <strong id="reject-customer-name"></strong><br>
+                        Amount: <strong>GHS <span id="reject-amount"></span></strong>
+                    </div>
+                    <div class="form-group">
+                        <label for="rejection_reason">Reason for Rejection:</label>
+                        <textarea class="form-control" 
+                                  id="rejection_reason" 
+                                  name="rejection_reason" 
+                                  rows="3" 
+                                  placeholder="Please provide a reason for rejection..."
+                                  required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Confirm Rejection
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Loan Disbursement Modal -->
+<div class="modal fade" id="disburseModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-money-bill-wave"></i> Disburse Loan
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Confirm loan disbursement to customer:</p>
+                <div class="alert alert-info">
+                    <strong id="disburse-customer-name"></strong><br>
+                    Amount: <strong>GHS <span id="disburse-amount"></span></strong>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Important:</strong> Please ensure cash is ready for disbursement before confirming.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="#" id="confirm-disburse" class="btn btn-info">
+                    <i class="fas fa-money-bill-wave"></i> Confirm Disbursement
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container for Real-time Notifications -->
+<div class="toast-container position-fixed top-0 right-0 p-3" style="z-index: 1050;"></div>
+
+<script>
+// Loan action functions
+function approveLoan(loanId, customerName, amount) {
+    document.getElementById('approve-customer-name').textContent = customerName;
+    document.getElementById('approve-amount').textContent = amount;
+    document.getElementById('confirm-approve').href = `/admin/approve_loan/${loanId}/`;
+    $('#approveModal').modal('show');
+}
+
+function rejectLoan(loanId, customerName, amount) {
+    document.getElementById('reject-customer-name').textContent = customerName;
+    document.getElementById('reject-amount').textContent = amount;
+    document.getElementById('reject-form').action = `/admin/reject_loan/${loanId}/`;
+    $('#rejectModal').modal('show');
+}
+
+function disburseLoan(loanId, customerName, amount) {
+    document.getElementById('disburse-customer-name').textContent = customerName;
+    document.getElementById('disburse-amount').textContent = amount;
+    document.getElementById('confirm-disburse').href = `/admin/disburse_loan/${loanId}/`;
+    $('#disburseModal').modal('show');
+}
+
+// Initialize real-time monitoring when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading indicator
+    console.log('Loan review page loaded - Real-time monitoring active');
+    
+    // Add visual indicator for real-time updates
+    const indicator = document.querySelector('.real-time-indicator');
+    if (indicator) {
+        setInterval(() => {
+            indicator.style.opacity = indicator.style.opacity === '0.3' ? '1' : '0.3';
+        }, 1000);
+    }
+});
+</script>
+{% endblock %}

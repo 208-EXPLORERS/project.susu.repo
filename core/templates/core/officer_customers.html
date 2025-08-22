@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+
+{% block title %}My Customers {% endblock %}
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="fas fa-users text-primary"></i>
+                    My Customers ({{ customers.count }})
+                </h1>
+                <div class="btn-group">
+                    <a href="{% url 'add_customer' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Add Customer
+                    </a>
+                    <a href="{% url 'officer_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="search">Search Customers</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="q" id="search" 
+                                   placeholder="Name, phone, or customer ID..." value="{{ request.GET.q }}">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="status">Status Filter</label>
+                        <select name="status" id="status" class="form-control" onchange="this.form.submit()">
+                            <option value="">All Status</option>
+                            <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="sort">Sort By</label>
+                        <select name="sort" id="sort" class="form-control" onchange="this.form.submit()">
+                            <option value="name">Name (A-Z)</option>
+                            <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                            <option value="-total_savings" {% if request.GET.sort == '-total_savings' %}selected{% endif %}>Highest Savings</option>
+                            <option value="total_savings" {% if request.GET.sort == 'total_savings' %}selected{% endif %}>Lowest Savings</option>
+                            <option value="-date_joined" {% if request.GET.sort == '-date_joined' %}selected{% endif %}>Newest First</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <div>
+                            <a href="{% url 'officer_customers' %}" class="btn btn-secondary btn-block">Clear Filters</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Cards/Grid View -->
+    {% if customers %}
+        <div class="row">
+            {% for customer in customers %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 customer-card {% if customer.status == 'inactive' %}border-warning{% endif %}">
+                    <div class="card-body">
+                        <!-- Customer Header -->
+                        <div class="d-flex align-items-center mb-3">
+                            {% if customer.photo %}
+                                <img src="{{ customer.photo.url }}" class="rounded-circle mr-3" width="48" height="48">
+                            {% else %}
+                                <div class="bg-primary rounded-circle mr-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1">{{ customer.name }}</h5>
+                                <p class="text-muted mb-0 small">{{ customer.customer_id }}</p>
+                                <span class="badge badge-{% if customer.status == 'active' %}success{% else %}warning{% endif %} badge-sm">
+                                    {{ customer.status|title }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Customer Details -->
+                        <div class="mb-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-right">
+                                        <h5 class="text-success mb-0">GHS {{ customer.total_savings|floatformat:2 }}</h5>
+                                        <small class="text-muted">Total Savings</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h5 class="text-info mb-0">
+                                        {% if customer.last_contribution_date %}
+                                            {{ customer.last_contribution_date|timesince|truncatewords:1 }}
+                                        {% else %}
+                                            Never
+                                        {% endif %}
+                                    </h5>
+                                    <small class="text-muted">Last Contribution</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Info -->
+                        <div class="mb-3">
+                            {% if customer.phone %}
+                                <p class="mb-1"><i class="fas fa-phone text-muted mr-2"></i>{{ customer.phone }}</p>
+                            {% endif %}
+                            <p class="mb-0 small"><i class="fas fa-map-marker-alt text-muted mr-2"></i>{{ customer.address|truncatechars:40 }}</p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="btn-group btn-group-sm w-100" role="group">
+                            <a href="{% url 'add_contribution' customer.id %}" class="btn btn-success" title="Add Contribution">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                            <a href="{% url 'customer_detail' customer.id %}" class="btn btn-info" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'edit_customer' customer.id %}" class="btn btn-warning" title="Edit Customer">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'apply_loan' customer.id %}" class="btn btn-primary" title="Apply Loan">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer with Quick Stats -->
+                    <div class="card-footer bg-light">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted">Joined</small><br>
+                                <small><strong>{{ customer.date_joined|date:"M Y" }}</strong></small>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Status</small><br>
+                                <small><strong class="text-{% if customer.status == 'active' %}success{% else %}warning{% endif %}">
+                                    {{ customer.status|title }}
+                                </strong></small>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Missed Days</small><br>
+                                <small><strong class="{% if customer.missed_days > 7 %}text-danger{% elif customer.missed_days > 3 %}text-warning{% else %}text-success{% endif %}">
+                                    {{ customer.missed_days }}
+                                </strong></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination (if needed) -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <p class="text-muted">Showing {{ customers.count }} customer{{ customers.count|pluralize }}</p>
+                    <!-- Add pagination here if you implement it -->
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-4"></i>
+                <h4 class="text-muted">No customers found</h4>
+                {% if request.GET.q or request.GET.status %}
+                    <p class="text-muted mb-4">
+                        No customers match your search criteria. Try adjusting your filters.
+                    </p>
+                    <a href="{% url 'officer_customers' %}" class="btn btn-outline-secondary mr-2">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </a>
+                {% else %}
+                    <p class="text-muted mb-4">
+                        You haven't added any customers yet. Start building your customer base.
+                    </p>
+                {% endif %}
+                <a href="{% url 'add_customer' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Add Your First Customer
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.customer-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.customer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.border-right {
+    border-right: 1px solid #dee2e6;
+}
+
+.badge-sm {
+    font-size: 0.75em;
+}
+
+.btn-group-sm .btn {
+    font-size: 0.875rem;
+}
+
+/* Custom badge colors for better visibility */
+.badge-success {
+    background-color: #28a745;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.5rem;
+    }
+    
+    .customer-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Loading animation for dynamic content */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.customer-card {
+    animation: fadeIn 0.3s ease-in-out;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Real-time search functionality
+    const searchInput = document.getElementById('search');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (this.value.length > 2 || this.value.length === 0) {
+                    // Auto-submit search after 1 second of inactivity
+                    // this.form.submit();
+                }
+            }, 1000);
+        });
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + N for new customer
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            window.location.href = "{% url 'add_customer' %}";
+        }
+        
+        // Focus search on '/' key
+        if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
+    
+    // Add contribution shortcut buttons
+    document.querySelectorAll('[title="Add Contribution"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Add loading state
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            this.disabled = true;
+        });
+    });
+    
+    // Customer status update animation
+    document.querySelectorAll('.customer-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const badge = this.querySelector('.badge');
+            if (badge) {
+                badge.classList.add('badge-pulse');
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const badge = this.querySelector('.badge');
+            if (badge) {
+                badge.classList.remove('badge-pulse');
+            }
+        });
+    });
+});
+
+// Helper function to refresh customer data
+function refreshCustomerData() {
+    const cards = document.querySelectorAll('.customer-card');
+    cards.forEach(card => {
+        card.classList.add('loading');
+    });
+    
+    // Simulate refresh (in real implementation, this would make an AJAX call)
+    setTimeout(() => {
+        cards.forEach(card => {
+            card.classList.remove('loading');
+        });
+        
+        // Show success toast
+        if (window.Susu && window.Susu.Toast) {
+            window.Susu.Toast.show('Refreshed', 'Customer data updated', 'success');
+        }
+    }, 1000);
+}
+
+// Export function for manual refresh
+window.refreshCustomers = refreshCustomerData;
+</script>
+
+<style>
+.badge-pulse {
+    animation: badgePulse 1s infinite;
+}
+
+@keyframes badgePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+</style>
+{% endblock %}
