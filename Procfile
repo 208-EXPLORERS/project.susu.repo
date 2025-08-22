@@ -1,0 +1,1 @@
+web: gunicorn susu_system.wsgi --log-file -
