@@ -1,0 +1,1694 @@
+[
+{
+  "model": "admin.logentry",
+  "pk": 1,
+  "fields": {
+    "action_time": "2025-08-03T22:26:50.997Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "2",
+    "object_repr": "Enyce",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 2,
+  "fields": {
+    "action_time": "2025-08-03T22:28:00.429Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "2",
+    "object_repr": "Enyce",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 3,
+  "fields": {
+    "action_time": "2025-08-03T22:28:43.195Z",
+    "user": 1,
+    "content_type": 7,
+    "object_id": "1",
+    "object_repr": "Legon",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 4,
+  "fields": {
+    "action_time": "2025-08-03T22:29:00.769Z",
+    "user": 1,
+    "content_type": 8,
+    "object_id": "1",
+    "object_repr": "S (Legon)",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 5,
+  "fields": {
+    "action_time": "2025-08-05T16:51:23.392Z",
+    "user": 1,
+    "content_type": 7,
+    "object_id": "1",
+    "object_repr": "Legon",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 6,
+  "fields": {
+    "action_time": "2025-08-05T16:56:48.877Z",
+    "user": 1,
+    "content_type": 7,
+    "object_id": "2",
+    "object_repr": "Legon",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 7,
+  "fields": {
+    "action_time": "2025-08-05T16:59:32.949Z",
+    "user": 1,
+    "content_type": 8,
+    "object_id": "2",
+    "object_repr": "S (Legon)",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 1,
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": 1,
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 2,
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": 1,
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 3,
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": 1,
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 4,
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": 1,
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 5,
+  "fields": {
+    "name": "Can add permission",
+    "content_type": 2,
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 6,
+  "fields": {
+    "name": "Can change permission",
+    "content_type": 2,
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 7,
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": 2,
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 8,
+  "fields": {
+    "name": "Can view permission",
+    "content_type": 2,
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 9,
+  "fields": {
+    "name": "Can add group",
+    "content_type": 3,
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 10,
+  "fields": {
+    "name": "Can change group",
+    "content_type": 3,
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 11,
+  "fields": {
+    "name": "Can delete group",
+    "content_type": 3,
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 12,
+  "fields": {
+    "name": "Can view group",
+    "content_type": 3,
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 13,
+  "fields": {
+    "name": "Can add user",
+    "content_type": 4,
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 14,
+  "fields": {
+    "name": "Can change user",
+    "content_type": 4,
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 15,
+  "fields": {
+    "name": "Can delete user",
+    "content_type": 4,
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 16,
+  "fields": {
+    "name": "Can view user",
+    "content_type": 4,
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 17,
+  "fields": {
+    "name": "Can add content type",
+    "content_type": 5,
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 18,
+  "fields": {
+    "name": "Can change content type",
+    "content_type": 5,
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 19,
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": 5,
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 20,
+  "fields": {
+    "name": "Can view content type",
+    "content_type": 5,
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 21,
+  "fields": {
+    "name": "Can add session",
+    "content_type": 6,
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 22,
+  "fields": {
+    "name": "Can change session",
+    "content_type": 6,
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 23,
+  "fields": {
+    "name": "Can delete session",
+    "content_type": 6,
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 24,
+  "fields": {
+    "name": "Can view session",
+    "content_type": 6,
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 25,
+  "fields": {
+    "name": "Can add community",
+    "content_type": 7,
+    "codename": "add_community"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 26,
+  "fields": {
+    "name": "Can change community",
+    "content_type": 7,
+    "codename": "change_community"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 27,
+  "fields": {
+    "name": "Can delete community",
+    "content_type": 7,
+    "codename": "delete_community"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 28,
+  "fields": {
+    "name": "Can view community",
+    "content_type": 7,
+    "codename": "view_community"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 29,
+  "fields": {
+    "name": "Can add collection officer",
+    "content_type": 8,
+    "codename": "add_collectionofficer"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 30,
+  "fields": {
+    "name": "Can change collection officer",
+    "content_type": 8,
+    "codename": "change_collectionofficer"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 31,
+  "fields": {
+    "name": "Can delete collection officer",
+    "content_type": 8,
+    "codename": "delete_collectionofficer"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 32,
+  "fields": {
+    "name": "Can view collection officer",
+    "content_type": 8,
+    "codename": "view_collectionofficer"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 33,
+  "fields": {
+    "name": "Can add customer",
+    "content_type": 9,
+    "codename": "add_customer"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 34,
+  "fields": {
+    "name": "Can change customer",
+    "content_type": 9,
+    "codename": "change_customer"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 35,
+  "fields": {
+    "name": "Can delete customer",
+    "content_type": 9,
+    "codename": "delete_customer"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 36,
+  "fields": {
+    "name": "Can view customer",
+    "content_type": 9,
+    "codename": "view_customer"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 37,
+  "fields": {
+    "name": "Can add loan",
+    "content_type": 10,
+    "codename": "add_loan"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 38,
+  "fields": {
+    "name": "Can change loan",
+    "content_type": 10,
+    "codename": "change_loan"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 39,
+  "fields": {
+    "name": "Can delete loan",
+    "content_type": 10,
+    "codename": "delete_loan"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 40,
+  "fields": {
+    "name": "Can view loan",
+    "content_type": 10,
+    "codename": "view_loan"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 41,
+  "fields": {
+    "name": "Can add loan repayment",
+    "content_type": 11,
+    "codename": "add_loanrepayment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 42,
+  "fields": {
+    "name": "Can change loan repayment",
+    "content_type": 11,
+    "codename": "change_loanrepayment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 43,
+  "fields": {
+    "name": "Can delete loan repayment",
+    "content_type": 11,
+    "codename": "delete_loanrepayment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 44,
+  "fields": {
+    "name": "Can view loan repayment",
+    "content_type": 11,
+    "codename": "view_loanrepayment"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 45,
+  "fields": {
+    "name": "Can add notification",
+    "content_type": 12,
+    "codename": "add_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 46,
+  "fields": {
+    "name": "Can change notification",
+    "content_type": 12,
+    "codename": "change_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 47,
+  "fields": {
+    "name": "Can delete notification",
+    "content_type": 12,
+    "codename": "delete_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 48,
+  "fields": {
+    "name": "Can view notification",
+    "content_type": 12,
+    "codename": "view_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 49,
+  "fields": {
+    "name": "Can add transaction",
+    "content_type": 13,
+    "codename": "add_transaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 50,
+  "fields": {
+    "name": "Can change transaction",
+    "content_type": 13,
+    "codename": "change_transaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 51,
+  "fields": {
+    "name": "Can delete transaction",
+    "content_type": 13,
+    "codename": "delete_transaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 52,
+  "fields": {
+    "name": "Can view transaction",
+    "content_type": 13,
+    "codename": "view_transaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 53,
+  "fields": {
+    "name": "Can add contribution",
+    "content_type": 14,
+    "codename": "add_contribution"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 54,
+  "fields": {
+    "name": "Can change contribution",
+    "content_type": 14,
+    "codename": "change_contribution"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 55,
+  "fields": {
+    "name": "Can delete contribution",
+    "content_type": 14,
+    "codename": "delete_contribution"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 56,
+  "fields": {
+    "name": "Can view contribution",
+    "content_type": 14,
+    "codename": "view_contribution"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 57,
+  "fields": {
+    "name": "Can add daily submission",
+    "content_type": 15,
+    "codename": "add_dailysubmission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 58,
+  "fields": {
+    "name": "Can change daily submission",
+    "content_type": 15,
+    "codename": "change_dailysubmission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 59,
+  "fields": {
+    "name": "Can delete daily submission",
+    "content_type": 15,
+    "codename": "delete_dailysubmission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 60,
+  "fields": {
+    "name": "Can view daily submission",
+    "content_type": 15,
+    "codename": "view_dailysubmission"
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$mSzarR2QANujykcacnLbOV$0CrXwc7617KKVkgA/Tu8SpfaxmMMd21FdYvssBmiyB0=",
+    "last_login": "2025-08-22T17:58:21.706Z",
+    "is_superuser": true,
+    "username": "prinz",
+    "first_name": "",
+    "last_name": "",
+    "email": "senyce58@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-08-03T22:24:50.907Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$dwWKJJiXJEVCP0Va48Zs6S$yglA1at2YY0mXWTPx6boUFu0NbHV32CIduj/9HwvUbw=",
+    "last_login": "2025-08-22T14:54:18.678Z",
+    "is_superuser": false,
+    "username": "Enyce",
+    "first_name": "Sansakroma",
+    "last_name": "Lord",
+    "email": "senyce58@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-03T22:26:49Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$TKm48Z0RHF1tu9ILPcMWJj$KwVDqhX3/MUOqvB+NVNpadKj9szfXTQaQTs1XjvBI5U=",
+    "last_login": "2025-08-21T23:48:01.457Z",
+    "is_superuser": false,
+    "username": "ankra",
+    "first_name": "George",
+    "last_name": "Ankra",
+    "email": "enislolli111@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-12T22:20:47.004Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 1,
+  "fields": {
+    "app_label": "admin",
+    "model": "logentry"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 2,
+  "fields": {
+    "app_label": "auth",
+    "model": "permission"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 3,
+  "fields": {
+    "app_label": "auth",
+    "model": "group"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 4,
+  "fields": {
+    "app_label": "auth",
+    "model": "user"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 5,
+  "fields": {
+    "app_label": "contenttypes",
+    "model": "contenttype"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 6,
+  "fields": {
+    "app_label": "sessions",
+    "model": "session"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 7,
+  "fields": {
+    "app_label": "core",
+    "model": "community"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 8,
+  "fields": {
+    "app_label": "core",
+    "model": "collectionofficer"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 9,
+  "fields": {
+    "app_label": "core",
+    "model": "customer"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 10,
+  "fields": {
+    "app_label": "core",
+    "model": "loan"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 11,
+  "fields": {
+    "app_label": "core",
+    "model": "loanrepayment"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 12,
+  "fields": {
+    "app_label": "core",
+    "model": "notification"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 13,
+  "fields": {
+    "app_label": "core",
+    "model": "transaction"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 14,
+  "fields": {
+    "app_label": "core",
+    "model": "contribution"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 15,
+  "fields": {
+    "app_label": "core",
+    "model": "dailysubmission"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "0qt6ytqy2iqc09zi0a02k4q16bla84v0",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllZfzElfc5g7Xo3OIASKU4qxN0hUgpo38y8l8q4rTVvTZY8srooo06_G2F5yLQDvuN0m3WZp3UZSe-KPmjT_czyvB7u30HFVr91h0Kp8-6MwRrPgSCgj-AGY4FjAQgFEjopmAIQWvJiIrG45A1bGNT7A9PCN7s:1upT9m:6weWFMPgu73uGtebpENtfoe9vIhQrgWmKf3y6xLs8dA",
+    "expire_date": "2025-09-05T14:54:18.695Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "g8n9pbv1c1t5uyaz32p0egb3ulw2rv8r",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllZfzElfc5g7Xo3OIASKU4qxN0hUgpo38y8l8q4rTVvTZY8srooo06_G2F5yLQDvuN0m3WZp3UZSe-KPmjT_czyvB7u30HFVr91h0Kp8-6MwRrPgSCgj-AGY4FjAQgFEjopmAIQWvJiIrG45A1bGNT7A9PCN7s:1ujL1X:96pp3cISGbdk160yNPPUIrNcTnTsuPVjGXejYCH2A0s",
+    "expire_date": "2025-08-19T17:00:27.554Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "hvwr4qzmzhrdl1chqtpe0n9jwmwmgay6",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllZfzElfc5g7Xo3OIASKU4qxN0hUgpo38y8l8q4rTVvTZY8srooo06_G2F5yLQDvuN0m3WZp3UZSe-KPmjT_czyvB7u30HFVr91h0Kp8-6MwRrPgSCgj-AGY4FjAQgFEjopmAIQWvJiIrG45A1bGNT7A9PCN7s:1upT9k:hSKbBA9lSHpjtkOavOPYnI2rgJPgv1B8bhAuGrFWRSI",
+    "expire_date": "2025-09-05T14:54:16.654Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "qzxd3geqxdjuwwzsy6xqrj73gect5ynb",
+  "fields": {
+    "session_data": ".eJxVjMsOwiAQRf-FtSE8Ogy6dN9vIAMDUjU0Ke3K-O_apAvd3nPOfYlA21rD1vMSJhYXocXpd4uUHrntgO_UbrNMc1uXKcpdkQftcpw5P6-H-3dQqddvjcmwN8l4a-3A6BQ79OacwDFntARae3ClIBRFLvroAShq1Ck6VnoQ7w_HODdJ:1upW1t:Yi0JePDrRKWww7uJe9arXxlcB0YluriGxOzxM8e05VQ",
+    "expire_date": "2025-09-05T17:58:21.723Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "tu4y97gxw6pey2vqlhs9z3ak2zk9vd25",
+  "fields": {
+    "session_data": ".eJxVjMsOwiAQRf-FtSE8Ogy6dN9vIAMDUjU0Ke3K-O_apAvd3nPOfYlA21rD1vMSJhYXocXpd4uUHrntgO_UbrNMc1uXKcpdkQftcpw5P6-H-3dQqddvjcmwN8l4a-3A6BQ79OacwDFntARae3ClIBRFLvroAShq1Ck6VnoQ7w_HODdJ:1ulbxf:cJEkGyf2o-DhQJS7kiZpnkOCG8cqhZBDSRu17mIf-8k",
+    "expire_date": "2025-08-25T23:29:51.522Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "xlq3w2u1g9iec8a3iijoorj4l3ommhkz",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGllZfzElfc5g7Xo3OIASKU4qxN0hUgpo38y8l8q4rTVvTZY8srooo06_G2F5yLQDvuN0m3WZp3UZSe-KPmjT_czyvB7u30HFVr91h0Kp8-6MwRrPgSCgj-AGY4FjAQgFEjopmAIQWvJiIrG45A1bGNT7A9PCN7s:1uk6y6:aaQ3kDAGdxgEF018ZMf5rE5UPtxo05dNrsGRNvU4C-8",
+    "expire_date": "2025-08-21T20:12:06.185Z"
+  }
+},
+{
+  "model": "core.community",
+  "pk": 2,
+  "fields": {
+    "name": "Legon",
+    "created_at": "2025-08-05T16:56:48.874Z"
+  }
+},
+{
+  "model": "core.collectionofficer",
+  "pk": 2,
+  "fields": {
+    "user": 2,
+    "community": 2,
+    "created_at": "2025-08-05T16:58:04Z"
+  }
+},
+{
+  "model": "core.collectionofficer",
+  "pk": 3,
+  "fields": {
+    "user": 3,
+    "community": 2,
+    "created_at": "2025-08-12T22:20:46.792Z"
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 1,
+  "fields": {
+    "is_active": true,
+    "officer": null,
+    "name": "customer 1",
+    "phone": "",
+    "address": "legon",
+    "customer_id": "LE001",
+    "status": "active",
+    "date_joined": "2025-08-03",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 2,
+  "fields": {
+    "is_active": true,
+    "officer": null,
+    "name": "Sims",
+    "phone": "",
+    "address": "Madina",
+    "customer_id": "MA002",
+    "status": "active",
+    "date_joined": "2025-08-04",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 3,
+  "fields": {
+    "is_active": true,
+    "officer": null,
+    "name": "Lord Enyce",
+    "phone": "0500347688",
+    "address": "Madina",
+    "customer_id": "MA003",
+    "status": "active",
+    "date_joined": "2025-08-04",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 4,
+  "fields": {
+    "is_active": true,
+    "officer": null,
+    "name": "Godson",
+    "phone": "",
+    "address": "Madina",
+    "customer_id": "MA004",
+    "status": "active",
+    "date_joined": "2025-08-05",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 5,
+  "fields": {
+    "is_active": true,
+    "officer": 2,
+    "name": "Lord Enyce",
+    "phone": "0500347688",
+    "address": "Madina",
+    "customer_id": "MA001",
+    "status": "active",
+    "date_joined": "2025-08-05",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 6,
+  "fields": {
+    "is_active": true,
+    "officer": 2,
+    "name": "Sims Enyce",
+    "phone": "0500347688",
+    "address": "Legon",
+    "customer_id": "LE002",
+    "status": "active",
+    "date_joined": "2025-08-05",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 7,
+  "fields": {
+    "is_active": true,
+    "officer": 2,
+    "name": "Sims",
+    "phone": "0500347688",
+    "address": "Ablekuma",
+    "customer_id": "AB003",
+    "status": "active",
+    "date_joined": "2025-08-05",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 8,
+  "fields": {
+    "is_active": true,
+    "officer": 2,
+    "name": "Agbero",
+    "phone": "0500347688",
+    "address": "Lapaz",
+    "customer_id": "LA004",
+    "status": "active",
+    "date_joined": "2025-08-05",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 9,
+  "fields": {
+    "is_active": true,
+    "officer": 2,
+    "name": "Mimi",
+    "phone": "0500347688",
+    "address": "Ogbojo",
+    "customer_id": "OG005",
+    "status": "active",
+    "date_joined": "2025-08-05",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 10,
+  "fields": {
+    "is_active": true,
+    "officer": 2,
+    "name": "Falcao Kormla",
+    "phone": "0540471840",
+    "address": "Accra",
+    "customer_id": "AC006",
+    "status": "active",
+    "date_joined": "2025-08-07",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 11,
+  "fields": {
+    "is_active": true,
+    "officer": 2,
+    "name": "Nyc Lollipop",
+    "phone": "0500347688",
+    "address": "Achimota",
+    "customer_id": "AC007",
+    "status": "active",
+    "date_joined": "2025-08-12",
+    "missed_days": 0,
+    "photo": "customer_photos/WhatsApp_Image_2025-08-04_at_23.41.45_398e225d.jpg"
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 12,
+  "fields": {
+    "is_active": true,
+    "officer": 2,
+    "name": "Godson",
+    "phone": "0557862261",
+    "address": "Botwe",
+    "customer_id": "BO008",
+    "status": "active",
+    "date_joined": "2025-08-12",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 13,
+  "fields": {
+    "is_active": true,
+    "officer": 3,
+    "name": "Bobie Prince",
+    "phone": "0552000078",
+    "address": "Ashaiman",
+    "customer_id": "AS001",
+    "status": "active",
+    "date_joined": "2025-08-21",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.customer",
+  "pk": 14,
+  "fields": {
+    "is_active": true,
+    "officer": 3,
+    "name": "Adom Prosper",
+    "phone": "0597777773",
+    "address": "Nanakrom",
+    "customer_id": "NA002",
+    "status": "active",
+    "date_joined": "2025-08-21",
+    "missed_days": 0,
+    "photo": ""
+  }
+},
+{
+  "model": "core.dailysubmission",
+  "pk": 2,
+  "fields": {
+    "officer": 2,
+    "total_amount": "0.00",
+    "date": "2025-08-07",
+    "submitted": true,
+    "approved": false,
+    "feedback": null,
+    "submitted_at": "2025-08-07T16:56:05.284Z",
+    "approved_at": null,
+    "approved_by": null
+  }
+},
+{
+  "model": "core.dailysubmission",
+  "pk": 3,
+  "fields": {
+    "officer": 2,
+    "total_amount": "0.00",
+    "date": "2025-08-09",
+    "submitted": true,
+    "approved": false,
+    "feedback": null,
+    "submitted_at": "2025-08-09T06:31:47.429Z",
+    "approved_at": null,
+    "approved_by": null
+  }
+},
+{
+  "model": "core.dailysubmission",
+  "pk": 4,
+  "fields": {
+    "officer": 2,
+    "total_amount": "1300.00",
+    "date": "2025-08-10",
+    "submitted": true,
+    "approved": true,
+    "feedback": null,
+    "submitted_at": "2025-08-10T11:06:44.541Z",
+    "approved_at": null,
+    "approved_by": null
+  }
+},
+{
+  "model": "core.dailysubmission",
+  "pk": 5,
+  "fields": {
+    "officer": 2,
+    "total_amount": "400.00",
+    "date": "2025-08-11",
+    "submitted": true,
+    "approved": true,
+    "feedback": null,
+    "submitted_at": "2025-08-11T23:26:01.131Z",
+    "approved_at": null,
+    "approved_by": null
+  }
+},
+{
+  "model": "core.dailysubmission",
+  "pk": 6,
+  "fields": {
+    "officer": 2,
+    "total_amount": "200.00",
+    "date": "2025-08-12",
+    "submitted": true,
+    "approved": true,
+    "feedback": null,
+    "submitted_at": "2025-08-12T15:45:05.991Z",
+    "approved_at": null,
+    "approved_by": null
+  }
+},
+{
+  "model": "core.dailysubmission",
+  "pk": 7,
+  "fields": {
+    "officer": 2,
+    "total_amount": "12200.00",
+    "date": "2025-08-17",
+    "submitted": true,
+    "approved": true,
+    "feedback": null,
+    "submitted_at": "2025-08-18T01:44:20.882Z",
+    "approved_at": null,
+    "approved_by": null
+  }
+},
+{
+  "model": "core.dailysubmission",
+  "pk": 8,
+  "fields": {
+    "officer": 2,
+    "total_amount": "2250.00",
+    "date": "2025-08-21",
+    "submitted": true,
+    "approved": true,
+    "feedback": null,
+    "submitted_at": "2025-08-22T02:48:00.746Z",
+    "approved_at": null,
+    "approved_by": null
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 1,
+  "fields": {
+    "customer": 1,
+    "amount": "200.00",
+    "date": "2025-08-03T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": null,
+    "created_at": "2025-08-03T22:30:54.893Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 2,
+  "fields": {
+    "customer": 1,
+    "amount": "200.00",
+    "date": "2025-08-04T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-04T01:54:16.488Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 3,
+  "fields": {
+    "customer": 2,
+    "amount": "300.00",
+    "date": "2025-08-04T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-04T02:01:13.364Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 4,
+  "fields": {
+    "customer": 2,
+    "amount": "100.00",
+    "date": "2025-08-05T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-05T11:14:09.088Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 5,
+  "fields": {
+    "customer": 9,
+    "amount": "300.00",
+    "date": "2025-08-06T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-06T11:15:39.568Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 6,
+  "fields": {
+    "customer": 5,
+    "amount": "300.00",
+    "date": "2025-08-06T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-06T12:14:59.173Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 7,
+  "fields": {
+    "customer": 6,
+    "amount": "100.00",
+    "date": "2025-08-06T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-06T12:19:19.720Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 8,
+  "fields": {
+    "customer": 5,
+    "amount": "200.00",
+    "date": "2025-08-07T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-07T17:17:55.770Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 9,
+  "fields": {
+    "customer": 6,
+    "amount": "500.00",
+    "date": "2025-08-07T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-07T17:19:01.552Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 10,
+  "fields": {
+    "customer": 10,
+    "amount": "10000.00",
+    "date": "2025-08-07T00:00:00Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-07T19:14:58.921Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 11,
+  "fields": {
+    "customer": 7,
+    "amount": "200.00",
+    "date": "2025-08-09T06:27:49.293Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-09T06:27:49.294Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 12,
+  "fields": {
+    "customer": 8,
+    "amount": "200.00",
+    "date": "2025-08-09T06:29:51.223Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-09T06:29:51.223Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 13,
+  "fields": {
+    "customer": 7,
+    "amount": "200.00",
+    "date": "2025-08-09T06:30:22.015Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-09T06:30:22.015Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 14,
+  "fields": {
+    "customer": 7,
+    "amount": "5000.00",
+    "date": "2025-08-09T06:30:36.980Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-09T06:30:36.980Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 15,
+  "fields": {
+    "customer": 9,
+    "amount": "2000.00",
+    "date": "2025-08-09T06:47:48.945Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-09T06:47:48.946Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 16,
+  "fields": {
+    "customer": 5,
+    "amount": "200.00",
+    "date": "2025-08-09T07:25:22.024Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-09T07:25:22.024Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 17,
+  "fields": {
+    "customer": 6,
+    "amount": "300.00",
+    "date": "2025-08-09T07:25:49.959Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-09T07:25:49.959Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 18,
+  "fields": {
+    "customer": 5,
+    "amount": "300.00",
+    "date": "2025-08-10T11:04:39.492Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-10T11:04:39.492Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 19,
+  "fields": {
+    "customer": 6,
+    "amount": "700.00",
+    "date": "2025-08-10T11:05:01.238Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-10T11:05:01.241Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 20,
+  "fields": {
+    "customer": 7,
+    "amount": "300.00",
+    "date": "2025-08-10T11:06:26.772Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-10T11:06:26.773Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 21,
+  "fields": {
+    "customer": 5,
+    "amount": "400.00",
+    "date": "2025-08-11T23:25:39.884Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-11T23:25:39.885Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 22,
+  "fields": {
+    "customer": 6,
+    "amount": "200.00",
+    "date": "2025-08-12T14:14:55.249Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "keep my money safe",
+    "created_at": "2025-08-12T14:14:55.249Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 23,
+  "fields": {
+    "customer": 9,
+    "amount": "200.00",
+    "date": "2025-08-17T20:53:34.803Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-17T20:53:34.803Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 24,
+  "fields": {
+    "customer": 8,
+    "amount": "4000.00",
+    "date": "2025-08-17T20:53:59.283Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-17T20:53:59.283Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 25,
+  "fields": {
+    "customer": 10,
+    "amount": "5000.00",
+    "date": "2025-08-17T20:54:30.931Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-17T20:54:30.931Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 26,
+  "fields": {
+    "customer": 7,
+    "amount": "3000.00",
+    "date": "2025-08-18T01:43:32.510Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-18T01:43:32.510Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 27,
+  "fields": {
+    "customer": 14,
+    "amount": "200.00",
+    "date": "2025-08-22T01:53:36.936Z",
+    "recorded_by": 3,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-22T01:53:36.937Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 28,
+  "fields": {
+    "customer": 11,
+    "amount": "700.00",
+    "date": "2025-08-22T02:46:26.625Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-22T02:46:26.625Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 29,
+  "fields": {
+    "customer": 8,
+    "amount": "200.00",
+    "date": "2025-08-22T02:46:51.519Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-22T02:46:51.520Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 30,
+  "fields": {
+    "customer": 10,
+    "amount": "1250.00",
+    "date": "2025-08-22T02:47:22.543Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-22T02:47:22.543Z"
+  }
+},
+{
+  "model": "core.contribution",
+  "pk": 31,
+  "fields": {
+    "customer": 9,
+    "amount": "100.00",
+    "date": "2025-08-22T02:47:42.016Z",
+    "recorded_by": 2,
+    "approved": false,
+    "notes": "",
+    "created_at": "2025-08-22T02:47:42.016Z"
+  }
+},
+{
+  "model": "core.loan",
+  "pk": 1,
+  "fields": {
+    "customer": 5,
+    "amount": "200.00",
+    "purpose": "for food",
+    "date_applied": "2025-08-12T15:34:16.693Z",
+    "status": "approved",
+    "approved_by": 1,
+    "date_approved": "2025-08-12T17:35:01.642Z",
+    "date_disbursed": null,
+    "repayment_period_months": 12,
+    "interest_rate": "10.00",
+    "monthly_repayment": "17.58",
+    "total_repayment": "211.00",
+    "amount_repaid": "0.00",
+    "notes": "adey beg waa",
+    "rejection_reason": null
+  }
+},
+{
+  "model": "core.loan",
+  "pk": 2,
+  "fields": {
+    "customer": 7,
+    "amount": "2000.00",
+    "purpose": "for food",
+    "date_applied": "2025-08-18T01:59:08.285Z",
+    "status": "pending",
+    "approved_by": null,
+    "date_approved": null,
+    "date_disbursed": null,
+    "repayment_period_months": 12,
+    "interest_rate": "10.00",
+    "monthly_repayment": null,
+    "total_repayment": null,
+    "amount_repaid": "0.00",
+    "notes": "",
+    "rejection_reason": null
+  }
+},
+{
+  "model": "core.notification",
+  "pk": 1,
+  "fields": {
+    "recipient": 1,
+    "notification_type": "loan_application",
+    "title": "New Loan Application - Lord Enyce",
+    "message": "New loan application of GHS 200 submitted by S for customer Lord Enyce (MA001). Purpose: for food",
+    "is_read": false,
+    "created_at": "2025-08-12T15:34:16.753Z",
+    "related_object_id": 1
+  }
+},
+{
+  "model": "core.notification",
+  "pk": 2,
+  "fields": {
+    "recipient": 2,
+    "notification_type": "loan_application",
+    "title": "Loan Approved - Lord Enyce",
+    "message": "Loan application of GHS 200.00 for Lord Enyce has been approved. Monthly repayment: GHS 17.58",
+    "is_read": false,
+    "created_at": "2025-08-12T17:35:01.667Z",
+    "related_object_id": 1
+  }
+},
+{
+  "model": "core.notification",
+  "pk": 3,
+  "fields": {
+    "recipient": 1,
+    "notification_type": "loan_application",
+    "title": "New Loan Application - Sims",
+    "message": "New loan application of GHS 2000 submitted by Sansakroma Lord for customer Sims (AB003). Purpose: for food",
+    "is_read": false,
+    "created_at": "2025-08-18T01:59:08.313Z",
+    "related_object_id": 2
+  }
+}
+]

@@ -293,10 +293,18 @@ def submit_daily_total(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def review_daily_submissions(request):
-    today = timezone.now().date()
-    submissions = DailySubmission.objects.filter(date=today).select_related('officer__user')
-    return render(request, 'core/review_submissions.html', {'submissions': submissions})
-
+    # Show all unApproved submissions, not just today's
+    submissions = DailySubmission.objects.filter(
+        approved=False
+    ).select_related('officer__user').order_by('-date', '-submitted_at')
+    
+    # Add some context for filtering
+    context = {
+        'submissions': submissions,
+        'total_pending': submissions.count(),
+    }
+    
+    return render(request, 'core/review_submissions.html', context)
 
 @user_passes_test(lambda u: u.is_superuser)
 def approve_submission(request, submission_id):
@@ -1067,6 +1075,8 @@ def delete_collection_officer(request, officer_id):
         return redirect('manage_officers')
     
     return render(request, 'core/delete_officer_confirm.html', {'officer': officer})
+
+
 
 
 

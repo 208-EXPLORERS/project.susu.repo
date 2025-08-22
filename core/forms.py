@@ -383,14 +383,22 @@ class DateRangeForm(forms.Form):
         
         return cleaned_data
     
+from django import forms
+from django.contrib.auth.models import User
+from .models import CollectionOfficer, Community
+
 class CollectionOfficerForm(forms.ModelForm):
     # User fields
     first_name = forms.CharField(max_length=30, required=True)
     last_name = forms.CharField(max_length=30, required=True)
     username = forms.CharField(max_length=150, required=True)
     email = forms.EmailField(required=True)
-    password = forms.CharField(widget=forms.PasswordInput, required=True)
-    confirm_password = forms.CharField(widget=forms.PasswordInput, required=True)
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        required=True,
+        min_length=8,
+        help_text="Password must be at least 8 characters long"
+    )
     
     class Meta:
         model = CollectionOfficer
@@ -401,6 +409,11 @@ class CollectionOfficerForm(forms.ModelForm):
         # Add CSS classes for styling
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
+        
+        # Add specific attributes
+        self.fields['password'].widget.attrs.update({
+            'placeholder': 'Enter password for this officer'
+        })
     
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -414,22 +427,18 @@ class CollectionOfficerForm(forms.ModelForm):
             raise forms.ValidationError("Email already exists.")
         return email
     
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
-        
-        if password and confirm_password and password != confirm_password:
-            raise forms.ValidationError("Passwords don't match.")
-        
-        return cleaned_data
+    def clean_password(self):
+        password = self.cleaned_data['password']
+        if len(password) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters long.")
+        return password
     
     def save(self, commit=True):
         # Create the user first
         user = User.objects.create_user(
             username=self.cleaned_data['username'],
             email=self.cleaned_data['email'],
-            password=self.cleaned_data['password'],
+            password=self.cleaned_data['password'],  # Super admin sets this
             first_name=self.cleaned_data['first_name'],
             last_name=self.cleaned_data['last_name']
         )

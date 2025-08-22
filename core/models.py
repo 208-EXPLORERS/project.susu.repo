@@ -48,7 +48,7 @@ class Customer(models.Model):
     date_joined = models.DateField(auto_now_add=True)
     missed_days = models.PositiveIntegerField(default=0)
     photo = models.ImageField(upload_to='customer_photos/', blank=True, null=True)
-
+    
     def save(self, *args, **kwargs):
         # Only auto-generate customer_id if it hasn't been set
         if not self.customer_id and self.officer:
