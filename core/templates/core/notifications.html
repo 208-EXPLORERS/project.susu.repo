@@ -110,7 +110,7 @@
                                 <div class="ml-3">
                                     {% if not notification.is_read %}
                                         <button class="btn btn-sm btn-outline-primary" 
-                                                onclick="markAsRead({{ notification.id }})">
+                                                onclick="markAsRead({ notification_id })">
                                             <i class="fas fa-check"></i> Mark as Read
                                         </button>
                                     {% endif %}

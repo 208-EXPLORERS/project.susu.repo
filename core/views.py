@@ -523,7 +523,6 @@ def reject_loan(request, loan_id):
     messages.success(request, f"Loan of GHS {loan.amount} for {loan.customer.name} rejected.")
     return redirect('review_loans')
 
-
 @user_passes_test(lambda u: u.is_superuser)
 def export_contributions_pdf(request):
     # Group contributions by customer
@@ -537,11 +536,17 @@ def export_contributions_pdf(request):
         total = customer.contributions.aggregate(total=Sum('amount'))['total'] or 0
         grand_total += total
 
+        # FIX: Handle cases where customer.officer is None
+        if customer.officer and customer.officer.user:
+            officer_name = customer.officer.user.get_full_name() or customer.officer.user.username
+        else:
+            officer_name = "No Officer Assigned"
+
         customer_data.append({
             'name': customer.name,
             'customer_id': customer.customer_id,
             'address': customer.address,
-            'officer': customer.officer.user.get_full_name() or customer.officer.user.username,
+            'officer': officer_name,
             'total': total,
             'recent_contributions': contributions,
         })
@@ -552,7 +557,6 @@ def export_contributions_pdf(request):
         'export_date': timezone.now().date(),
     }
     return render_to_pdf('core/pdf_contributions.html', context)
-
 
 @user_passes_test(lambda u: u.is_superuser)
 def export_contributions_csv(request):
@@ -615,10 +619,10 @@ def custom_login_view(request):
             if user is not None:
                 login(request, user)
 
-                # Redirect based on role
+                # ALWAYS redirect superusers/staff to YOUR custom admin dashboard
                 if user.is_superuser or user.is_staff:
                     messages.success(request, f"Welcome back, {user.get_full_name() or user.username}!")
-                    return redirect('/admin/')
+                    return redirect('dashboard')  # Use URL name instead of hardcoded path
                 else:
                     try:
                         officer = CollectionOfficer.objects.get(user=user)
@@ -633,7 +637,6 @@ def custom_login_view(request):
         form = CustomLoginForm()
 
     return render(request, 'core/login.html', {'form': form})
-
 
 # Additional utility view for customer details
 @officer_required
