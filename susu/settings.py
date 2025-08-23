@@ -57,7 +57,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'core.urls'
+ROOT_URLCONF = 'susu.urls'
 
 TEMPLATES = [
     {
@@ -74,7 +74,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'core.wsgi.application'  # Fixed: changed from 'susu.wsgi.application'
+WSGI_APPLICATION = 'susu.wsgi.application'
 
 LOGIN_URL = 'login'
 
@@ -90,18 +90,21 @@ if 'PGDATABASE' in os.environ:
             'PASSWORD': os.environ.get('PGPASSWORD'),
             'HOST': os.environ.get('PGHOST'),
             'PORT': os.environ.get('PGPORT', 5432),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
         }
     }
 else:
-    # Local development database
+    # Local development database - use environment variables for security
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'susu_system_db',
-            'USER': 'susu_user',
-            'PASSWORD': 'GHETTOBWOY',
-            'HOST': 'localhost',
-            'PORT': '5432',
+            'NAME': os.environ.get('DB_NAME', 'susu_system_db'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
 
