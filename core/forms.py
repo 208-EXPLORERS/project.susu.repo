@@ -24,7 +24,7 @@ class CustomerForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter phone number (optional)',
-                'pattern': '[0-9+\-\s()]*'
+                'pattern': r'[0-9+\-\s()]*'
             }),
             'photo': forms.ClearableFileInput(attrs={
                 'class': 'form-control-file'}),
