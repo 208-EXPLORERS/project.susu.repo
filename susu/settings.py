@@ -80,19 +80,16 @@ LOGIN_URL = 'login'
 
 # Database Configuration
 # Check if we're in Railway production environment
-if 'PGDATABASE' in os.environ:
-    # Production database (Railway PostgreSQL)
+# Database configuration
+if os.environ.get('PGHOST'):  # If Railway environment variables exist
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('PGDATABASE'),
-            'USER': os.environ.get('PGUSER'),
+            'NAME': os.environ.get('PGDATABASE', 'railway'),
+            'USER': os.environ.get('PGUSER', 'postgres'),
             'PASSWORD': os.environ.get('PGPASSWORD'),
             'HOST': os.environ.get('PGHOST'),
-            'PORT': os.environ.get('PGPORT', 5432),
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
+            'PORT': os.environ.get('PGPORT', '5432'),
         }
     }
 else:
