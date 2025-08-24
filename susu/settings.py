@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-k-vjmc6e$8s%jl0^#buqo
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Updated ALLOWED_HOSTS for both local and production
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.25.180','web-production-ded3d.up.railway.app'
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.25.180'
 ]
 
 # Add Railway domains if in production
@@ -86,7 +86,7 @@ LOGIN_URL = 'login'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'postgres://postgres:GHETTOBWOY@localhost:5432/susu_system_db')
+        default=os.environ.get('DATABASE_URL')
     )
 }
 
