@@ -28,8 +28,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-k-vjmc6e$8s%jl0^#buqo
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Updated ALLOWED_HOSTS for both local and production
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.25.180'
-]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.25.180']
 
 # Add Railway domains if in production
 if 'RAILWAY_ENVIRONMENT' in os.environ:
@@ -80,16 +79,39 @@ WSGI_APPLICATION = 'susu.wsgi.application'
 
 LOGIN_URL = 'login'
 
-# Database Configuration
-# Check if we're in Railway production environment
-# Database configuration
+# Database Configuration - FIXED VERSION
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
-    print(f"DEBUG: Using DATABASE_URL: {DATABASE_URL[:50]}...")  # Print first 50 chars for security
+    # Use dj_database_url.config() instead of parse()
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True,  # Railway requires SSL
+        )
     }
+    # Optional debug info (remove in production)
+    if DEBUG:
+        print(f"DEBUG: Using DATABASE_URL connection")
+elif os.environ.get('PGHOST'):
+    # Railway individual environment variables
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('PGDATABASE', 'railway'),
+            'USER': os.environ.get('PGUSER', 'postgres'),
+            'PASSWORD': os.environ.get('PGPASSWORD', ''),
+            'HOST': os.environ.get('PGHOST', 'localhost'),
+            'PORT': os.environ.get('PGPORT', '5432'),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
+    }
+    if DEBUG:
+        print(f"DEBUG: Using Railway PG environment variables")
 else:
     # Fallback to local development settings
     DATABASES = {
@@ -102,9 +124,13 @@ else:
             'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
+    if DEBUG:
+        print(f"DEBUG: Using local database connection")
 
-print(f"DEBUG - Final database ENGINE: {DATABASES['default']['ENGINE']}")
-print(f"DEBUG - Final database HOST: {DATABASES['default'].get('HOST', 'No HOST')}")
+# Debug info (remove these lines in production)
+if DEBUG:
+    print(f"DEBUG - Final database ENGINE: {DATABASES['default']['ENGINE']}")
+    print(f"DEBUG - Final database HOST: {DATABASES['default'].get('HOST', 'No HOST')}")
 
 
 # Password validation
