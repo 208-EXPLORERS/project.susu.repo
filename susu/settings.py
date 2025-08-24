@@ -28,7 +28,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-k-vjmc6e$8s%jl0^#buqo
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Updated ALLOWED_HOSTS for both local and production
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.25.180']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.25.180','web-production-ded3d.up.railway.app'
+]
 
 # Add Railway domains if in production
 if 'RAILWAY_ENVIRONMENT' in os.environ:
