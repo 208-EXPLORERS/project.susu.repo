@@ -86,6 +86,7 @@ LOGIN_URL = 'login'
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
+    print(f"DEBUG: Using DATABASE_URL: {DATABASE_URL[:50]}...")  # Print first 50 chars for security
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL)
     }
@@ -102,6 +103,8 @@ else:
         }
     }
 
+print(f"DEBUG - Final database ENGINE: {DATABASES['default']['ENGINE']}")
+print(f"DEBUG - Final database HOST: {DATABASES['default'].get('HOST', 'No HOST')}")
 
 
 # Password validation
