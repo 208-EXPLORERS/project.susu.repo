@@ -23,6 +23,7 @@ from .utils import get_business_day
 
 
 
+
 @method_decorator(login_required, name='dispatch')
 class OfficerCustomerListView(ListView):
     model = Customer
@@ -1080,6 +1081,23 @@ def delete_collection_officer(request, officer_id):
     return render(request, 'core/delete_officer_confirm.html', {'officer': officer})
 
 
+def home_view(request):
+    """
+    Root URL handler - redirects based on authentication and user type
+    """
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    # User is authenticated, redirect based on user type
+    if request.user.is_superuser or request.user.is_staff:
+        return redirect('dashboard')  # Admin dashboard
+    else:
+        try:
+            officer = CollectionOfficer.objects.get(user=request.user)
+            return redirect('officer_dashboard')  # Officer dashboard
+        except CollectionOfficer.DoesNotExist:
+            messages.error(request, "No officer profile found for this user. Please contact administrator.")
+            return redirect('login')
 
 
 
