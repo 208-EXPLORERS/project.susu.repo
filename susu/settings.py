@@ -178,3 +178,13 @@ if not DEBUG:
     # CSRF_COOKIE_SECURE = True
 
 LOGIN_REDIRECT_URL = 'dashboard'
+
+RAILWAY_STATIC_URL = os.environ.get('RAILWAY_STATIC_URL')
+if RAILWAY_STATIC_URL:
+    ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
+    ALLOWED_HOSTS.append('.railway.app')
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://web-production-ded3d.up.railway.app',
+    'https://*.railway.app',
+]
