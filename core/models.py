@@ -50,16 +50,40 @@ class Customer(models.Model):
     photo = models.ImageField(upload_to='customer_photos/', blank=True, null=True)
     
     def save(self, *args, **kwargs):
-        # Only auto-generate customer_id if it hasn't been set
+    # Only auto-generate customer_id if it hasn't been set
         if not self.customer_id and self.officer:
             # Use first 2 letters of address, fallback to 'XX' if too short
             address_code = (self.address[:2].upper() if len(self.address) >= 2 else "XX")
             
-            # Count existing customers under the same officer
-            count = Customer.objects.filter(officer=self.officer).count() + 1
+            # Find the highest existing number for this address code under this officer
+            existing_customers = Customer.objects.filter(
+                officer=self.officer,
+                customer_id__startswith=address_code
+            ).exclude(pk=self.pk)  # Exclude current instance if updating
             
-            number_code = str(count).zfill(3)
-            self.customer_id = f"{address_code}{number_code}"
+            if existing_customers.exists():
+                # Extract numbers from existing customer_ids and find the max
+                numbers = []
+                for customer in existing_customers:
+                    try:
+                        # Extract number part (everything after first 2 characters)
+                        number_part = customer.customer_id[2:]
+                        if number_part.isdigit():
+                            numbers.append(int(number_part))
+                    except (IndexError, ValueError):
+                        continue
+                
+                next_number = max(numbers) + 1 if numbers else 1
+            else:
+                next_number = 1
+            
+            # Generate unique customer_id
+            self.customer_id = f"{address_code}{str(next_number).zfill(3)}"
+            
+            # Double-check uniqueness (safety net)
+            while Customer.objects.filter(customer_id=self.customer_id).exclude(pk=self.pk).exists():
+                next_number += 1
+                self.customer_id = f"{address_code}{str(next_number).zfill(3)}"
 
         super().save(*args, **kwargs)
 

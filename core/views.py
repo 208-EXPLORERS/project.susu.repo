@@ -183,7 +183,6 @@ def add_customer(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
             name = form.cleaned_data['name']
             address = form.cleaned_data['address']
 
@@ -192,10 +191,10 @@ def add_customer(request):
                 messages.error(request, "A customer with this name and address already exists.")
                 return redirect('add_customer')
 
-            # Save new customer and assign officer
+            # Save new customer and assign officer (only save once!)
             customer = form.save(commit=False)
             customer.officer = officer
-            customer.save()
+            customer.save()  # Now customer_id will be properly generated
 
             messages.success(request, f"Customer '{customer.name}' added successfully.")
             return redirect('officer_customers')
@@ -205,7 +204,6 @@ def add_customer(request):
         form = CustomerForm()
 
     return render(request, 'core/add_customer.html', {'form': form})
-
 
 @officer_required
 def add_transaction(request):
