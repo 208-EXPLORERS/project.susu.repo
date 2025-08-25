@@ -856,6 +856,10 @@ def get_unread_notifications_count(request):
 def dashboard(request):
     user = request.user
 
+    # Route collection officers to their specific dashboard
+    if hasattr(user, 'collectionofficer'):
+        return redirect('officer_dashboard')
+
     if user.is_superuser:
         # Super admin dashboard
         total_officers = CollectionOfficer.objects.count()
@@ -903,6 +907,14 @@ def dashboard(request):
             'unread_notifications': unread_notifications,
         }
         return render(request, 'core/super_dashboard.html', context)
+    
+    # Handle users who are not superusers or collection officers
+    else:
+        messages.error(request, 'Access denied. Your user role is not recognized.')
+        return render(request, 'core/error.html', {
+            'message': 'Access denied. Please contact the administrator.',
+            'error_type': 'Permission Denied'
+        })
     
 # NEW: Loan disbursement management
 @user_passes_test(lambda u: u.is_superuser)
