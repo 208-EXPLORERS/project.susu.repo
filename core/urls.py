@@ -54,6 +54,8 @@ urlpatterns = [
     path('admin/officers/add/', views.add_collection_officer, name='add_collection_officer'),
     path('admin/officers/edit/<int:officer_id>/', views.edit_collection_officer, name='edit_collection_officer'),
     path('admin/officers/delete/<int:officer_id>/', views.delete_collection_officer, name='delete_collection_officer'),
-    
+    path('admin/communities/', views.community_list, name='community_list'),
+    path('admin/communities/add/', views.add_community, name='add_community'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -7,7 +7,7 @@ from django.views.generic.edit import CreateView
 from .forms import CustomerForm, TransactionForm, ContributionForm, LoanForm,LoanRepaymentForm, CollectionOfficerForm
 from django.urls import reverse_lazy 
 from django.utils import timezone
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from .utils import render_to_pdf
 import csv
 from django.http import HttpResponse
@@ -1101,3 +1101,50 @@ def home_view(request):
 
 
 
+@login_required
+def add_community(request):
+    """View to add a new community - only for admin/staff"""
+    if request.method == 'POST':
+        community_name = request.POST.get('name', '').strip()
+        
+        if not community_name:
+            messages.error(request, 'Community name is required.')
+            return render(request, 'admin/add_community.html')
+        
+        # Check if community already exists
+        if Community.objects.filter(name__iexact=community_name).exists():
+            messages.error(request, f'Community "{community_name}" already exists.')
+            return render(request, 'admin/add_community.html', {'name': community_name})
+        
+        try:
+            # Create the community
+            community = Community.objects.create(name=community_name)
+            messages.success(request, f'Community "{community_name}" has been created successfully!')
+            
+            # Redirect to community list or back to form
+            if 'save_and_continue' in request.POST:
+                return redirect('add_community')  # Stay on the form to add more
+            else:
+                return redirect('community_list')  # Go to community list
+                
+        except Exception as e:
+            messages.error(request, f'Error creating community: {str(e)}')
+    
+    return render(request, 'core/add_community.html')
+
+@login_required
+def community_list(request):
+    """View to list all communities with statistics"""
+    communities = Community.objects.annotate(
+        officer_count=Count('collectionofficer'),
+        customer_count=Count('collectionofficer__customers')
+    ).order_by('name')
+    
+    context = {
+        'communities': communities,
+        'total_communities': communities.count(),
+        'total_officers': CollectionOfficer.objects.count(),
+        'total_customers': Customer.objects.count(),
+    }
+    
+    return render(request, 'core/community_list.html', context)
