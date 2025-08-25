@@ -20,3 +20,18 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# In Django shell or a management command
+from core.models import Customer
+
+# Find customers with empty customer_id
+empty_customers = Customer.objects.filter(customer_id__in=['', None])
+
+# Delete them or fix them
+for customer in empty_customers:
+    if customer.officer and customer.address:
+        customer.customer_id = ''  # Reset to trigger regeneration
+        customer.save()
+    else:
+        # Delete if no officer or address
+        customer.delete()
