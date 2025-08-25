@@ -184,3 +184,32 @@ if 'RAILWAY_ENVIRONMENT' in os.environ:
             print("✅ Auto-migration completed")
         except Exception as e:
             print(f"❌ Auto-migration failed: {e}")
+
+if 'RAILWAY_ENVIRONMENT' in os.environ:
+    try:
+        import django
+        django.setup()
+        from django.contrib.auth.models import User
+        
+        # Check if superuser exists
+        if not User.objects.filter(username='admin').exists():
+            # Create default superuser
+            User.objects.create_superuser(
+                username='admin',
+                email='admin@example.com',
+                password='admin123'  # Change this password!
+            )
+            print("✅ Default superuser created: admin/admin123")
+        else:
+            print("✅ Superuser already exists")
+            
+        # Create your regular user if needed
+        if not User.objects.filter(username='prinz').exists():
+            User.objects.create_user(
+                username='prinz',
+                password='GHETTOBWOY'
+            )
+            print("✅ User 'prinz' created")
+            
+    except Exception as e:
+        print(f"❌ User creation error: {e}")
